@@ -6,7 +6,7 @@
  - Rahman, Fahid
  - Kang, Angela
 
-## Description:
+## Description
 This Capstone project will concentrate on building a Site/App Interface with its own separate Backend logic for storing and accessing user data (to avoid rate-limit API calls).Extending Spotify services beyond that which is provided by default in Spotify by accessing account details and analytics. For example: Give more accurate song queues based on your current listening session,  auto skips at set timestamps, Spotify wrapped stats at current stage, etc.  Basically, a Spotify wrapper with a lot of added (and technically complex) features.
 
 ## Languages
