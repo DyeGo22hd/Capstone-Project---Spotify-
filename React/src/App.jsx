@@ -1,35 +1,52 @@
-import { useState } from 'react'
+import { useState, createContext, useEffect } from 'react'
+import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 
+import { account } from './Components/appwrite-oauth/appwrite-config.js';
+import OAuthLogin from './Components/appwrite-oauth/appwrite-spotify.jsx'
+import UserInfo from './Components/appwrite-oauth/appwrite-session-info.jsx'
+
+
 function App() {
-    const [count, setCount] = useState(0)
+    const [session, setSession] = useState(null);
+    const navigate = useNavigate(); // Use navigate to redirect
+
+    useEffect(() => {
+        const checkSession = async () => {
+            try {
+                const currentSession = await account.getSession('current');
+                console.log('Current session:', currentSession);
+                setSession(currentSession); // Save session info
+            } catch (error) {
+                console.log('No active session:', error);
+            }
+        };
+
+        checkSession();
+    }, []);
+
+    const handleLoginSuccess = (currentSession) => {
+        setSession(currentSession); // Save session info
+        navigate('/success'); // Redirect to success route
+    };
 
     return (
-        <>
-            <div>
-                <a href="https://vite.dev" target="_blank">
-                    <img src={viteLogo} className="logo" alt="Vite logo" />
-                </a>
-                <a href="https://react.dev" target="_blank">
-                    <img src={reactLogo} className="logo react" alt="React logo" />
-                </a>
-            </div>
-            <h1>Vite + React</h1>
-            <div className="card">
-                <button onClick={() => setCount((count) => count + 1)}>
-                    count is {count}
-                </button>
-                <p>
-                    Edit <code>src/App.jsx</code> and save to test HMR
-                </p>
-            </div>
-            <p className="read-the-docs">
-                Click on the Vite and React logos to learn more
-            </p>
-        </>
-    )
+        <div className="App">
+            <h1>Appwrite OAuth2 with React</h1>
+            <Routes>
+                <Route path="/success" element={
+                    <>
+                        <div>Login Successful</div>
+                        {session && <UserInfo/>} {/* Render UserInfo here */}
+                    </>
+                } />
+                <Route path="/failed" element={<div>Login Failed</div>} />
+                <Route path="/" element={<OAuthLogin onLoginSuccess={handleLoginSuccess} />} />
+            </Routes>
+        </div>
+    );
 }
 
 export default App
