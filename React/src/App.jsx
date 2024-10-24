@@ -12,7 +12,6 @@ import GetPlayback from './Components/spotify-data/spotify-player.jsx';
 
 function App() {
     const [session, setSession] = useState(null);
-    const [accessToken, setAccessToken] = useState(null);
     const navigate = useNavigate(); // Use navigate to redirect
 
     useEffect(() => {

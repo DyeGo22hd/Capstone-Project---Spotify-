@@ -1,5 +1,7 @@
 import PropTypes from 'prop-types';
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react';
+import TrackHTML from './track-display/track-container.jsx';
+import TracksList from './track-display/tracks-list.jsx';
 
 const GetPlayback = ({ authToken }) => {
     const [isLoadingHistory, setLoadingHistory] = useState(true);
@@ -27,7 +29,7 @@ const GetPlayback = ({ authToken }) => {
             }
 
             const json = await response.json();
-            setHistoryData(JSON.stringify(json['items']));
+            setHistoryData(json['items']);
 
         } catch (error) {
             console.log('API error: ', error );
@@ -81,21 +83,58 @@ const GetPlayback = ({ authToken }) => {
         </div>
     );
 
-    if (!isLoadingHistory) {
+    if (!isLoadingHistory && historyData) {
         historyHTML = (
             <div>
-                {historyData}
+                <TracksList>
+                    {historyData.map((item) => (<TrackHTML key={item.track.id} artists={item.track.artists} name={item.track.name} when={item.played_at} length={item.track.duration_ms}/>))}
+                </TracksList>
+            </div>
+        );
+    }
+    else {
+        historyHTML = (
+            <div>
+                Data Empty!
             </div>
         );
     };
 
-    if (!isLoadingQueue) {
+    if (!isLoadingQueue && queueData) {
+        var currentData = (<div>Not playing anything!</div>);
+        var futureData = (<div>Not playing anything!</div>);
+
+        if (queueData['currently_playing']) {
+            currentData = (
+                <TracksList>
+                    {queueData['currently_playing'].map((item) => (<TrackHTML key={item.id} artists={item.artists} name={item.name} when={new Date()} length={item.duration_ms}/>))}
+                </TracksList>
+            );
+        };
+        if (queueData['queue']){
+            futureData = (
+                <TracksList>
+                    {queueData['queue'].map((item) => (<TrackHTML key={item.id} artists={item.artists} name={item.name} when={new Date()} length={item.duration_ms}/>))}
+                </TracksList>
+            );
+        };
+
         queueHTML = (
             <div>
-                {queueData}
+                <h2> Currently Playing </h2>
+                    {currentData}
+                <h2> Future Queue </h2>
+                    {futureData}
             </div>
         );
-    };
+    }
+    else {
+        queueHTML = (
+            <div>
+                Data Empty!
+            </div>
+        );
+    }
 
     return (
         <div>
