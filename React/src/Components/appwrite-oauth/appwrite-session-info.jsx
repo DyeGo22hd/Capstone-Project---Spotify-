@@ -25,7 +25,6 @@ const UserInfo = () => {
         <div>
             <p>Provider: {session.provider}</p>
             <p>Provider UID: {session.providerUid}</p>
-            <p>Access Token: {session.providerAccessToken}</p>
         </div>
     );
 };

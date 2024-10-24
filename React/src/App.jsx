@@ -5,12 +5,14 @@ import viteLogo from '/vite.svg'
 import './App.css'
 
 import { account } from './Components/appwrite-oauth/appwrite-config.js';
-import OAuthLogin from './Components/appwrite-oauth/appwrite-spotify.jsx'
-import UserInfo from './Components/appwrite-oauth/appwrite-session-info.jsx'
+import OAuthLogin from './Components/appwrite-oauth/appwrite-spotify.jsx';
+import UserInfo from './Components/appwrite-oauth/appwrite-session-info.jsx';
+import GetPlayback from './Components/spotify-data/spotify-player.jsx';
 
 
 function App() {
     const [session, setSession] = useState(null);
+    const [accessToken, setAccessToken] = useState(null);
     const navigate = useNavigate(); // Use navigate to redirect
 
     useEffect(() => {
@@ -32,18 +34,29 @@ function App() {
         navigate('/success'); // Redirect to success route
     };
 
+    const goToPlayback = () => {
+        navigate('/playback');
+    };
+
     return (
         <div className="App">
             <h1>Appwrite OAuth2 with React</h1>
             <Routes>
+                <Route path="/playback" element={
+                    <>
+                        {session && <GetPlayback authToken={session.providerAccessToken}  />}
+                    </>
+                } />
+
                 <Route path="/success" element={
                     <>
                         <div>Login Successful</div>
                         {session && <UserInfo/>} {/* Render UserInfo here */}
+                        <button onClick={goToPlayback}>Go To PlayBack Data</button>
                     </>
                 } />
                 <Route path="/failed" element={<div>Login Failed</div>} />
-                <Route path="/" element={<OAuthLogin onLoginSuccess={handleLoginSuccess} />} />
+                <Route path="/" element={<OAuthLogin onLoginSuccess={handleLoginSuccess} />} />                
             </Routes>
         </div>
     );

@@ -8,7 +8,7 @@ const OAuthLogin = ({ onLoginSuccess }) => {
                 OAuthProvider.Spotify, // Update with your OAuth provider
                 'http://localhost:5173/success', // Redirect here on success
                 'http://localhost:5173/failed', // Redirect here on failure
-                ['user-read-email'] // Scopes
+                ['user-read-email', 'user-read-currently-playing', 'user-read-playback-state', 'user-read-recently-played'] // Scopes
             );
             const currentSession = await account.getSession('current');
             onLoginSuccess(currentSession); // Pass the session to App
