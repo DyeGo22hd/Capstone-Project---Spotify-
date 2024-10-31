@@ -15,6 +15,11 @@ const GetPlayback = ({ authToken }) => {
     const recentlyPlayedLink = "https://api.spotify.com/v1/me/player/recently-played";
     const currentQueueLink = "https://api.spotify.com/v1/me/player/queue";
 
+    useEffect(() => {
+        getHistory();
+        getQueue();
+    }, [])
+
     const getHistory = async () => {
         try {
             const response = await fetch(recentlyPlayedLink, {
@@ -87,12 +92,12 @@ const GetPlayback = ({ authToken }) => {
         historyHTML = (
             <div>
                 <TracksList>
-                    {historyData.map((item) => (<TrackHTML key={item.track.id} artists={item.track.artists} name={item.track.name} when={item.played_at} length={item.track.duration_ms}/>))}
+                    {historyData.map((item) => (<TrackHTML key={`${item.track.id}${item.played_at}`} artists={item.track.artists} name={item.track.name} when={item.played_at} length={item.track.duration_ms} />))}
                 </TracksList>
             </div>
         );
     }
-    else {
+    else if (!isLoadingHistory) {
         historyHTML = (
             <div>
                 Data Empty!
@@ -128,7 +133,7 @@ const GetPlayback = ({ authToken }) => {
             </div>
         );
     }
-    else {
+    else if (!isLoadingQueue){
         queueHTML = (
             <div>
                 Data Empty!
