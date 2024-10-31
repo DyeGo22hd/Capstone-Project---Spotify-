@@ -3,3 +3,8 @@
     flex-direction:row;
     justify-content:space-between;
 }
+
+.list-container{
+    margin-left:20px;
+    margin-right:20px;
+}
