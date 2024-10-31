@@ -39,7 +39,7 @@ function App() {
 
     return (
         <div className="App">
-            <h1>Appwrite OAuth2 with React</h1>
+            <h1>Peepify</h1>
             <Routes>
                 <Route path="/playback" element={
                     <>

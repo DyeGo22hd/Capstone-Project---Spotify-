@@ -40,6 +40,7 @@ const TrackHTML = ({artists, name, when, length}) => {
     return(
         <div>
             <h4> Track </h4>
+            <hr style={{width:'25%'}}></hr>
             <p> Artists: {artistNames} </p>
             <p> Name: {name} </p>
             <p> Length: {formattedLength} </p>

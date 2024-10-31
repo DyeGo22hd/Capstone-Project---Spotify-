@@ -1,5 +1,8 @@
 import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
+
+import './spotify-player.css';
+
 import TrackHTML from './track-display/track-container.jsx';
 import TracksList from './track-display/tracks-list.jsx';
 
@@ -57,7 +60,7 @@ const GetPlayback = ({ authToken }) => {
             }
 
             const json = await response.json();
-            setQueueData(JSON.stringify(json));
+            setQueueData(json);
         } catch (error) {
             console.log('API error: ', error );
         }
@@ -87,6 +90,11 @@ const GetPlayback = ({ authToken }) => {
             Queue Data Loading!
         </div>
     );
+    var playbackHTML = (
+        <div>
+            Playback Data Loading!
+        </div>
+    );
 
     if (!isLoadingHistory && historyData) {
         historyHTML = (
@@ -110,9 +118,10 @@ const GetPlayback = ({ authToken }) => {
         var futureData = (<div>Not playing anything!</div>);
 
         if (queueData['currently_playing']) {
+            const item = queueData['currently_playing'];
             currentData = (
                 <TracksList>
-                    {queueData['currently_playing'].map((item) => (<TrackHTML key={item.id} artists={item.artists} name={item.name} when={new Date()} length={item.duration_ms}/>))}
+                    <TrackHTML artists={item.artists} name={item.name} when={new Date()} length={item.duration_ms}/>
                 </TracksList>
             );
         };
@@ -124,16 +133,25 @@ const GetPlayback = ({ authToken }) => {
             );
         };
 
+        playbackHTML = (
+            <div>
+                {currentData}
+            </div>
+        );
+
         queueHTML = (
             <div>
-                <h2> Currently Playing </h2>
-                    {currentData}
-                <h2> Future Queue </h2>
-                    {futureData}
+                {futureData}
             </div>
         );
     }
-    else if (!isLoadingQueue){
+    else if (!isLoadingQueue) {
+        playbackHTML = (
+            <div>
+                Data Empty!
+            </div>
+        );
+
         queueHTML = (
             <div>
                 Data Empty!
@@ -144,10 +162,19 @@ const GetPlayback = ({ authToken }) => {
     return (
         <div>
             <button onClick={reload}>Reload Data</button>
-            <h1>Recently Played Tracks</h1>
-            {historyHTML}
-            <h1>Current Queue</h1>
-            {queueHTML}
+            <h2>Currently Playing</h2>
+            {playbackHTML}
+            <hr></hr>
+            <div className='box'>
+                <div className='list-container'>
+                    <h2>Recently Played Tracks</h2>
+                    {historyHTML}
+                </div>
+                <div className='list-container'>
+                    <h2>Current Queue</h2>
+                    {queueHTML}
+                </div>
+            </div>
         </div>
     );
 };
