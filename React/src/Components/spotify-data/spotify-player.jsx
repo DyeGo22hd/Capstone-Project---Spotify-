@@ -125,7 +125,7 @@ const GetPlayback = ({ authToken }) => {
                 </TracksList>
             );
         };
-        if (queueData['queue']){
+        if (queueData['queue'] && queueData['queue'].length > 0) {
             futureData = (
                 <TracksList>
                     {queueData['queue'].map((item) => (<TrackHTML key={item.id} artists={item.artists} name={item.name} when={new Date()} length={item.duration_ms}/>))}
