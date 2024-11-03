@@ -190,7 +190,8 @@ spotify_client.display_recent_tracks(50)
 
 print()
 #Open and Fetch data from Zip
-spotify_client.extract_and_load_json("C:/Users/tinci/Downloads/my_spotify_data.zip",'my_spotify_data.zip')
+path = input("Location Path for my_spotify_data_zip: ")
+spotify_client.extract_and_load_json(path,'my_spotify_data.zip')
 
 # Access the loaded data for each JSON file
 # print("Marquee Data:", spotify_client.marquee_data)
