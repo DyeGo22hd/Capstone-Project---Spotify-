@@ -1,5 +1,7 @@
 from spotify_client import SpotifyClient
 from datetime import datetime, timedelta
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 
 class DataAnalysis:
     def __init__(self, spotify_client):
@@ -19,7 +21,34 @@ class DataAnalysis:
             # Update the artist count
             artist_counts[artist_name] = artist_counts.get(artist_name, 0) + 1
 
-        return artist_counts
+        # Sort artist_counts dictionary by listen counts in descending order
+        sorted_artist_counts = dict(sorted(artist_counts.items(), key=lambda item: item[1], reverse=True))
+
+        return sorted_artist_counts
+    
+    def count_artist_listens_from_streaming_history(self, limit=50):
+
+        # Ensure streaming history data exists
+        if not hasattr(self.spotify_client, 'streaming_history_data'):
+            print("No streaming history data available.")
+            return {}
+
+        # Limit the records processed
+        streaming_history = self.spotify_client.streaming_history_data[-limit:][::-1]
+
+        artist_counts = {}
+
+        # Count artist listens in the streaming history
+        for record in streaming_history:
+            artist_name = record.get("artistName", "Unknown Artist")
+            artist_counts[artist_name] = artist_counts.get(artist_name, 0) + 1
+
+        # Sort artist_counts dictionary by listen counts in descending order
+        sorted_artist_counts = dict(sorted(artist_counts.items(), key=lambda item: item[1], reverse=True))
+
+        return sorted_artist_counts
+    
+
     
     def count_genre_listens(self, limit=50):
         # Retrieve recent tracks
@@ -43,55 +72,6 @@ class DataAnalysis:
         return genre_counts
 
 
-    # def analyze_skipped_tracks(self, session_threshold=900):
-    #     # Fetch recent tracks from Spotify
-    #     recent_tracks = self.spotify_client.get_recent_tracks(limit=50)
-
-    #     print("\nAnalysis of Recent Tracks for Skips (Using track duration):")
-    #     skipped_tracks = []
-
-    #     for idx in range(1, len(recent_tracks['items'])):
-    #         # Access current and previous track details
-    #         current_track = recent_tracks['items'][idx]['track']
-    #         previous_track = recent_tracks['items'][idx - 1]['track']
-    #         current_played_at = recent_tracks['items'][idx]['played_at']
-    #         previous_played_at = recent_tracks['items'][idx - 1]['played_at']
-            
-    #         # Convert ISO strings to datetime objects
-    #         current_played_datetime = datetime.fromisoformat(current_played_at.replace("Z", "+00:00"))
-    #         previous_played_datetime = datetime.fromisoformat(previous_played_at.replace("Z", "+00:00"))
-            
-    #         # Check if both tracks were played on the same day and within the session threshold
-    #         if (previous_played_datetime.date() == current_played_datetime.date() and
-    #                 (current_played_datetime - previous_played_datetime).total_seconds() <= session_threshold):
-                
-    #             # Track duration
-    #             track_duration_sec = previous_track['duration_ms'] / 1000  # Previous track duration in seconds
-
-    #             # Determine if the track was "skipped" or "not skipped"
-    #             # Here we assume that if it was played for less than 25% of the total duration, it is considered skipped
-    #             played_duration = abs((current_played_datetime - previous_played_datetime).total_seconds())
-    #             status = "Skipped" if played_duration < track_duration_sec * 0.25 else "Not Skipped"
-                
-    #             # Display the result for each track in the same session
-    #             print(f"{idx}. {previous_track['name']} by {previous_track['artists'][0]['name']} - {status} "
-    #                   f"(Played for approx. {int(played_duration)} seconds, "
-    #                   f"Track Duration: {int(track_duration_sec)} seconds)")
-                
-    #             if status == "Skipped":
-    #                 skipped_tracks.append({
-    #                     "track_name": previous_track['name'],
-    #                     "artist_name": previous_track['artists'][0]['name'],
-    #                     "playback_duration": int(played_duration),
-    #                     "track_duration": int(track_duration_sec)
-    #                 })
-                
-    #         else:
-    #             # If not in the same session, skip comparison
-    #             print(f"{idx}. {previous_track['name']} by {previous_track['artists'][0]['name']} - Session ended, no skip analysis")
-                
-    #     return skipped_tracks
-
 
 # Usage Example:
 spotify_client = SpotifyClient()
@@ -104,6 +84,15 @@ artist_listen_counts = data_analysis.count_artist_listens(limit=50)
 # Print the results
 print("\nArtist Listen Counts:")
 for artist, count in artist_listen_counts.items():
+    print(f"{artist}: {count} times")
+
+print()
+spotify_client.extract_and_load_json("C:/Users/tinci/Downloads/my_spotify_data.zip",'my_spotify_data.zip')
+streamed_artist_listen_counts = data_analysis.count_artist_listens_from_streaming_history(limit=250)
+print()
+
+print("\nArtist Listen Counts from Streaming History:")
+for artist, count in streamed_artist_listen_counts.items():
     print(f"{artist}: {count} times")
 
 # Count the number of times each genre was listened to
