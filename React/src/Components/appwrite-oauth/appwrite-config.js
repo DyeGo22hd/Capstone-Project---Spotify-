@@ -5,7 +5,7 @@ const appwrite_project_id = import.meta.env.VITE_PROJECT_ID;
 
 const client = new Client()
     .setEndpoint('https://cloud.appwrite.io/v1') // Your API Endpoint
-    .setProject(appwrite_project_id); // Your project ID
+    .setProject('66f9aeb700248be20f22'); // Your project ID
 
 const account = new Account(client);
 
