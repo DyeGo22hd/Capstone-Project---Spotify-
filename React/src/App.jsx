@@ -7,7 +7,7 @@ import './App.css'
 import { account } from './Components/appwrite-oauth/appwrite-config.js';
 import OAuthLogin from './Components/appwrite-oauth/appwrite-spotify.jsx';
 import UserInfo from './Components/appwrite-oauth/appwrite-session-info.jsx';
-import GetPlayback from './Components/spotify-data/spotify-player.jsx';
+import GetPlayback from './Pages/spotify-player.jsx';
 
 
 function App() {

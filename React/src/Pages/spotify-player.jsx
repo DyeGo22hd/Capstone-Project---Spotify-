@@ -1,16 +1,21 @@
 import PropTypes from 'prop-types';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, createContext } from 'react';
 
 import './spotify-player.css';
 
-import TrackHTML from './track-display/track-container.jsx';
-import TracksList from './track-display/tracks-list.jsx';
+import TrackHTML from '../Components/spotify-data/track-display/track-container.jsx';
+import TracksList from '../Components/spotify-data/track-display/tracks-list.jsx';
+import Playback from '../Components/spotify-data/playback.jsx';
 
-const GetPlayback = ({ authToken }) => {
+export const PlaybackContext = createContext(undefined);
+
+const GetCurrent = ({ authToken }) => {
     const [isLoadingHistory, setLoadingHistory] = useState(true);
     const [isLoadingQueue, setLoadingQueue] = useState(true);
     const [historyData, setHistoryData] = useState(undefined);
     const [queueData, setQueueData] = useState(undefined);
+
+    const [currentSong, setCurrentSong] = useState(undefined);
 
     const authHeader = new Headers();
     authHeader.append("Authorization", `Bearer ${authToken}`);
@@ -18,10 +23,16 @@ const GetPlayback = ({ authToken }) => {
     const recentlyPlayedLink = "https://api.spotify.com/v1/me/player/recently-played";
     const currentQueueLink = "https://api.spotify.com/v1/me/player/queue";
 
+    /*
+    const historySearchParams = new URLSearchParams({
+        limit: 50
+    }).toString()
+    */
+
     useEffect(() => {
         getHistory();
         getQueue();
-    }, [])
+    }, [currentSong])
 
     const getHistory = async () => {
         try {
@@ -61,6 +72,13 @@ const GetPlayback = ({ authToken }) => {
 
             const json = await response.json();
             setQueueData(json);
+            if (queueData['currently_playing']) {
+                const item = queueData['currently_playing'];
+                setCurrentSong(item.id);
+            }
+            else {
+                setCurrentSong(null);
+            }
         } catch (error) {
             console.log('API error: ', error );
         }
@@ -72,6 +90,7 @@ const GetPlayback = ({ authToken }) => {
             setLoadingQueue(true);
             setHistoryData(undefined);
             setQueueData(undefined);
+            setCurrentSong(undefined);
             
             await getHistory();
             await getQueue();
@@ -88,11 +107,6 @@ const GetPlayback = ({ authToken }) => {
     var queueHTML = (
         <div>
             Queue Data Loading!
-        </div>
-    );
-    var playbackHTML = (
-        <div>
-            Playback Data Loading!
         </div>
     );
 
@@ -133,12 +147,6 @@ const GetPlayback = ({ authToken }) => {
             );
         };
 
-        playbackHTML = (
-            <div>
-                {currentData}
-            </div>
-        );
-
         queueHTML = (
             <div>
                 {futureData}
@@ -146,12 +154,6 @@ const GetPlayback = ({ authToken }) => {
         );
     }
     else if (!isLoadingQueue) {
-        playbackHTML = (
-            <div>
-                Data Empty!
-            </div>
-        );
-
         queueHTML = (
             <div>
                 Data Empty!
@@ -163,7 +165,9 @@ const GetPlayback = ({ authToken }) => {
         <div>
             <button onClick={reload}>Reload Data</button>
             <h2>Currently Playing</h2>
-            {playbackHTML}
+            <PlaybackContext.Provider value={{currentSong, setCurrentSong}}>
+                <Playback authToken={authToken}/>
+             </PlaybackContext.Provider>
             <hr></hr>
             <div className='box'>
                 <div className='list-container'>
@@ -179,8 +183,8 @@ const GetPlayback = ({ authToken }) => {
     );
 };
 
-GetPlayback.propTypes = {
+GetCurrent.propTypes = {
     authToken: PropTypes.string.isRequired,
 };
 
-export default GetPlayback;
+export default GetCurrent;
