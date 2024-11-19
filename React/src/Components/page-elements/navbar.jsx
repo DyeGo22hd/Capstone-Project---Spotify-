@@ -19,7 +19,7 @@ const Navbar = () => {
         });
         document.getElementById('account').className = "active";
 
-        navigate('/success');
+        navigate('/account');
     };
 
     return (

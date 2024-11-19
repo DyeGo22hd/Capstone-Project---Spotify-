@@ -8,6 +8,7 @@ import UserInfo from './Components/appwrite-oauth/appwrite-session-info.jsx';
 
 import GetPlayback from './Pages/spotify-player.jsx';
 import Homepage from './Pages/homepage.jsx';
+import Account from './Pages/account.jsx';
 import Navbar from './Components/page-elements/navbar.jsx';
 
 export const SessionContext = createContext(undefined);
@@ -38,32 +39,40 @@ function App() {
     return (
         <div className="App">
             <Navbar />
-            <Routes>
-                <Route path="/playback" element={
-                    <>
-                        {session && <GetPlayback authToken={session.providerAccessToken}  />}
-                    </>
-                } />
+            <div className = "Page">
+                <Routes>
+                    <Route path="/playback" element={
+                        <>
+                            {session && <GetPlayback authToken={session.providerAccessToken}  />}
+                        </>
+                    } />
 
-                <Route path="/success" element={
-                    <>
-                        <div>Login Successful</div>
-                        {session && <UserInfo/>} {/* Render UserInfo here */}
-                        <button onClick={goToPlayback}>Go To PlayBack Data</button>
-                    </>
-                } />
-
-                <Route path="/failed" element={<div>Login Failed</div>} />
-
-                <Route path="/" element={
-                    <>
-                        <SessionContext.Provider value={{session, setSession}}>
-                            <Homepage />
+                    <Route path="/account" element={
+                        <SessionContext.Provider value={{ session, setSession }}>
+                            <Account />
                         </SessionContext.Provider>
+                    } />
+
+                    <Route path="/success" element={
+                        <>
+                            <div>Login Successful</div>
+                            {session && <UserInfo/>} {/* Render UserInfo here */}
+                            <button onClick={goToPlayback}>Go To PlayBack Data</button>
+                        </>
+                    } />
+
+                    <Route path="/failed" element={<div>Login Failed</div>} />
+
+                    <Route path="/" element={
+                        <>
+                            <SessionContext.Provider value={{session, setSession}}>
+                                <Homepage />
+                            </SessionContext.Provider>
                         
-                    </>
-                } />                
-            </Routes>
+                        </>
+                    } />                
+                </Routes>
+            </div>
         </div>
     );
 }
