@@ -1,13 +1,16 @@
 import { useState, createContext, useEffect } from 'react'
 import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
-import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 
 import { account } from './Components/appwrite-oauth/appwrite-config.js';
-import OAuthLogin from './Components/appwrite-oauth/appwrite-spotify.jsx';
 import UserInfo from './Components/appwrite-oauth/appwrite-session-info.jsx';
+
 import GetPlayback from './Pages/spotify-player.jsx';
+import Homepage from './Pages/homepage.jsx';
+import Navbar from './Components/page-elements/navbar.jsx';
+
+export const SessionContext = createContext(undefined);
 
 
 function App() {
@@ -28,18 +31,13 @@ function App() {
         checkSession();
     }, []);
 
-    const handleLoginSuccess = (currentSession) => {
-        setSession(currentSession); // Save session info
-        navigate('/success'); // Redirect to success route
-    };
-
     const goToPlayback = () => {
         navigate('/playback');
     };
 
     return (
         <div className="App">
-            <h1>Peepify</h1>
+            <Navbar />
             <Routes>
                 <Route path="/playback" element={
                     <>
@@ -54,8 +52,17 @@ function App() {
                         <button onClick={goToPlayback}>Go To PlayBack Data</button>
                     </>
                 } />
+
                 <Route path="/failed" element={<div>Login Failed</div>} />
-                <Route path="/" element={<OAuthLogin onLoginSuccess={handleLoginSuccess} />} />                
+
+                <Route path="/" element={
+                    <>
+                        <SessionContext.Provider value={{session, setSession}}>
+                            <Homepage />
+                        </SessionContext.Provider>
+                        
+                    </>
+                } />                
             </Routes>
         </div>
     );
