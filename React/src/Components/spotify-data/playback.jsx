@@ -74,9 +74,7 @@ const Playback = ({ authToken }) => {
         }
         else {
             let currentData = (
-                <TracksList>
-                    <TrackHTML artists={playbackData.artists} name={playbackData.name} when={new Date()} length={playbackData.duration_ms} />
-                </TracksList>
+                <TrackHTML artists={playbackData.artists} name={playbackData.name} when={new Date()} length={playbackData.duration_ms} />
             );
 
             playbackHTML = (

@@ -1,6 +1,8 @@
+import './tracks-list.css';
+
 const TracksList = (props) => {
 	return (
-		<div>
+		<div className="tracks-list">
 			{props.children}
 		</div>
 	);
