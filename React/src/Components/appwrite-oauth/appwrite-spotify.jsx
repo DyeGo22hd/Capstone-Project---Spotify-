@@ -6,7 +6,7 @@ const OAuthLogin = ({ onLoginSuccess }) => {
         try {
             await account.createOAuth2Session(
                 OAuthProvider.Spotify, // Update with your OAuth provider
-                'http://localhost:5173/success', // Redirect here on success
+                'http://localhost:5173/account', // Redirect here on success
                 'http://localhost:5173/failed', // Redirect here on failure
                 ['user-read-email', 'user-read-currently-playing', 'user-read-playback-state', 'user-read-recently-played'] // Scopes
             );

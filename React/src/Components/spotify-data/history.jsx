@@ -7,6 +7,7 @@ import TracksList from './track-display/tracks-list.jsx';
 
 const History = ({ authToken }) => {
     const currentSongRef = useContext(PlaybackContext);
+    const currentSongState = useState(currentSongRef.current);
 
     const [isLoadingHistory, setLoadingHistory] = useState(true);
     const [historyData, setHistoryData] = useState(undefined);
@@ -17,7 +18,7 @@ const History = ({ authToken }) => {
 
     useEffect(() => {
         getHistory();
-    }, [currentSongRef.current]);
+    }, [currentSongState]);
 
     const getHistory = async () => {
         try {

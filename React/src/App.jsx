@@ -1,5 +1,5 @@
 import { useState, createContext, useEffect } from 'react'
-import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 import viteLogo from '/vite.svg'
 import './App.css'
 
@@ -17,6 +17,7 @@ export const SessionContext = createContext(undefined);
 function App() {
     const [session, setSession] = useState(null);
     const navigate = useNavigate(); // Use navigate to redirect
+    const location = useLocation();
 
     useEffect(() => {
         const checkSession = async () => {
@@ -28,8 +29,22 @@ function App() {
                 console.log('No active session:', error);
             }
         };
+        const initializeNavbar = () => {
+            let currentPath = location.pathname;
+            if (currentPath == '/') {
+                currentPath = 'home';
+            }
+            else {
+                currentPath = currentPath.substring(1);
+            }
+            Array.from(document.querySelector('ul#navbar').getElementsByTagName('a')).forEach(function (e) {
+                e.classList.remove("active")
+            });
+            document.getElementById(currentPath).className = "active";
+        };
 
         checkSession();
+        initializeNavbar()
     }, []);
 
     const goToPlayback = () => {
