@@ -3,10 +3,9 @@ import { useState, useEffect, useContext, useRef } from 'react';
 import { PlaybackContext } from '../../Pages/spotify-player.jsx'
 
 import TrackHTML from './track-display/track-container.jsx';
-import TracksList from './track-display/tracks-list.jsx';
 
 const Playback = ({ authToken }) => {
-    const playerData = useContext(PlaybackContext);
+    const currentSongRef = useContext(PlaybackContext);
 
     const [isLoadingPlayback, setLoadingPlayback] = useState(true);
     const [playbackData, setPlaybackData] = useState(undefined);
@@ -45,18 +44,18 @@ const Playback = ({ authToken }) => {
         }
     };
 
-    /*
+
     if (!isLoadingPlayback) {
         if (playbackData) {
-            if (playbackData.id != playerData.currentSong) {
-                playerData.setCurrentSong(playbackData.id);
+            if (playbackData.id != currentSongRef.current) {
+                currentSongRef.current = playbackData.id;
             }
         }
-        else if (playerData.currentSong) {
-            playerData.setCurrentSong(null);
+        else if (currentSongRef.current) {
+            currentSongRef.current = null;
         }
     }
-    */
+    
 
     var playbackHTML = (
         <div>

@@ -1,27 +1,25 @@
 import PropTypes from 'prop-types';
-import { useState, useEffect, createContext } from 'react';
+import { useState, useEffect, createContext, useRef} from 'react';
 
 import './spotify-player.css';
 
 import TrackHTML from '../Components/spotify-data/track-display/track-container.jsx';
 import TracksList from '../Components/spotify-data/track-display/tracks-list.jsx';
 import Playback from '../Components/spotify-data/playback.jsx';
+import Queue from '../Components/spotify-data/queue.jsx';
 
 export const PlaybackContext = createContext(undefined);
 
 const GetCurrent = ({ authToken }) => {
     const [isLoadingHistory, setLoadingHistory] = useState(true);
-    const [isLoadingQueue, setLoadingQueue] = useState(true);
     const [historyData, setHistoryData] = useState(undefined);
-    const [queueData, setQueueData] = useState(undefined);
 
-    const [currentSong, setCurrentSong] = useState(undefined);
+    var currentSong = useRef(undefined);
 
     const authHeader = new Headers();
     authHeader.append("Authorization", `Bearer ${authToken}`);
 
     const recentlyPlayedLink = "https://api.spotify.com/v1/me/player/recently-played";
-    const currentQueueLink = "https://api.spotify.com/v1/me/player/queue";
 
     /*
     const historySearchParams = new URLSearchParams({
@@ -31,8 +29,7 @@ const GetCurrent = ({ authToken }) => {
 
     useEffect(() => {
         getHistory();
-        getQueue();
-    }, [currentSong])
+    })
 
     const getHistory = async () => {
         try {
@@ -57,40 +54,12 @@ const GetCurrent = ({ authToken }) => {
        
     };
 
-    const getQueue = async () => {
-        try {
-            const response = await fetch(currentQueueLink, {
-                method: "GET",
-                headers: authHeader,
-            });
-
-            setLoadingQueue(false);
-
-            if (!response.ok) {
-              throw new Error(`Response status: ${response.status}`);
-            }
-
-            const json = await response.json();
-            setQueueData(json);
-            if (queueData['currently_playing']) {
-                const item = queueData['currently_playing'];
-                setCurrentSong(item.id);
-            }
-            else {
-                setCurrentSong(null);
-            }
-        } catch (error) {
-            console.log('API error: ', error );
-        }
-    };
-
     const reload = async () => {
         try {
             setLoadingHistory(true);
             setLoadingQueue(true);
             setHistoryData(undefined);
             setQueueData(undefined);
-            setCurrentSong(undefined);
             
             await getHistory();
             await getQueue();
@@ -102,11 +71,6 @@ const GetCurrent = ({ authToken }) => {
     var historyHTML = (
         <div>
             Playback History Loading!
-        </div>
-    );
-    var queueHTML = (
-        <div>
-            Queue Data Loading!
         </div>
     );
 
@@ -127,45 +91,11 @@ const GetCurrent = ({ authToken }) => {
         );
     };
 
-    if (!isLoadingQueue && queueData) {
-        var currentData = (<div>Not playing anything!</div>);
-        var futureData = (<div>Not playing anything!</div>);
-
-        if (queueData['currently_playing']) {
-            const item = queueData['currently_playing'];
-            currentData = (
-                <TracksList>
-                    <TrackHTML artists={item.artists} name={item.name} when={new Date()} length={item.duration_ms}/>
-                </TracksList>
-            );
-        };
-        if (queueData['queue'] && queueData['queue'].length > 0) {
-            futureData = (
-                <TracksList>
-                    {queueData['queue'].map((item) => (<TrackHTML key={item.id} artists={item.artists} name={item.name} when={new Date()} length={item.duration_ms}/>))}
-                </TracksList>
-            );
-        };
-
-        queueHTML = (
-            <div>
-                {futureData}
-            </div>
-        );
-    }
-    else if (!isLoadingQueue) {
-        queueHTML = (
-            <div>
-                Data Empty!
-            </div>
-        );
-    }
-
     return (
         <div>
             <button onClick={reload}>Reload Data</button>
             <h2>Currently Playing</h2>
-            <PlaybackContext.Provider value={{currentSong, setCurrentSong}}>
+            <PlaybackContext.Provider value={currentSong}>
                 <Playback authToken={authToken}/>
              </PlaybackContext.Provider>
             <hr></hr>
@@ -176,7 +106,9 @@ const GetCurrent = ({ authToken }) => {
                 </div>
                 <div className='list-container'>
                     <h2>Current Queue</h2>
-                    {queueHTML}
+                    <PlaybackContext.Provider value={currentSong}>
+                        <Queue authToken={authToken} />
+                    </PlaybackContext.Provider>
                 </div>
             </div>
         </div>
