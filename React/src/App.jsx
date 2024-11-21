@@ -11,7 +11,7 @@ import Homepage from './Pages/homepage.jsx';
 import Account from './Pages/account.jsx';
 import Navbar from './Components/page-elements/navbar.jsx';
 
-export const SessionContext = createContext(undefined);
+export const sessionContext = createContext(undefined);
 
 
 function App() {
@@ -63,9 +63,9 @@ function App() {
                     } />
 
                     <Route path="/account" element={
-                        <SessionContext.Provider value={{ session, setSession }}>
+                        <sessionContext.Provider value={{ session, setSession }}>
                             <Account />
-                        </SessionContext.Provider>
+                        </sessionContext.Provider>
                     } />
 
                     <Route path="/success" element={
@@ -80,9 +80,9 @@ function App() {
 
                     <Route path="/" element={
                         <>
-                            <SessionContext.Provider value={{session, setSession}}>
+                            <sessionContext.Provider value={{session, setSession}}>
                                 <Homepage />
-                            </SessionContext.Provider>
+                            </sessionContext.Provider>
                         
                         </>
                     } />                

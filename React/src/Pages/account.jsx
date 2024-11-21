@@ -5,10 +5,10 @@ import OAuthLogin from '../Components/appwrite-oauth/appwrite-spotify.jsx';
 import OAuthLogOut from '../Components/appwrite-oauth/appwrite-logout.jsx';
 import UserInfo from '../Components/appwrite-oauth/appwrite-session-info.jsx';
 
-import { SessionContext } from '../App.jsx';
+import { sessionContext } from '../App.jsx';
 
 const Account = () => {
-    const sessionInfo = useContext(SessionContext);
+    const sessionInfo = useContext(sessionContext);
     const navigate = useNavigate();
 
     const handleLoginSuccess = (currentSession) => {
