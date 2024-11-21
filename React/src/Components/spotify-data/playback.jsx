@@ -1,15 +1,15 @@
 import PropTypes from 'prop-types';
-import { useState, useEffect, useContext, useRef } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { PlaybackContext } from '../../Pages/spotify-player.jsx'
 
 import TrackHTML from './track-display/track-container.jsx';
 
 const Playback = ({ authToken }) => {
     const currentSongRef = useContext(PlaybackContext);
+    const [currentSongState, setCurrentSongState] = useState(currentSongRef.current);
 
     const [isLoadingPlayback, setLoadingPlayback] = useState(true);
     const [playbackData, setPlaybackData] = useState(undefined);
-    const isFetching = useRef(false);
 
     const playbackLink = 'https://api.spotify.com/v1/me/player';
     const authHeader = new Headers();
@@ -18,6 +18,7 @@ const Playback = ({ authToken }) => {
 	// real-time update from: https://stackoverflow.com/questions/39426083/update-react-component-every-second
     useEffect(() => {
         getCurrentPlayback();
+        currentSongRef.current = currentSongState;
         const interval = setInterval(getCurrentPlayback, 1000);
 		return () => {
 			clearInterval(interval);
@@ -39,23 +40,19 @@ const Playback = ({ authToken }) => {
 
             const json = await response.json();
             setPlaybackData(json['item']);
+
+            if (playbackData) {
+                if (playbackData.id != currentSongState) {
+                    setCurrentSongState(playbackData.id);
+                }
+            }
+            else if (currentSongState) {
+                setCurrentSongState(null);
+            }
         } catch (error) {
             console.log('API error: ', error);
         }
     };
-
-
-    if (!isLoadingPlayback) {
-        if (playbackData) {
-            if (playbackData.id != currentSongRef.current) {
-                currentSongRef.current = playbackData.id;
-            }
-        }
-        else if (currentSongRef.current) {
-            currentSongRef.current = null;
-        }
-    }
-    
 
     var playbackHTML = (
         <div>

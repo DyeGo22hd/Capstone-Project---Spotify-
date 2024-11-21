@@ -7,6 +7,7 @@ import TracksList from './track-display/tracks-list.jsx';
 
 const Queue = ({ authToken }) => {
     const currentSongRef = useContext(PlaybackContext);
+    const currentSongState = useState(currentSongRef.current);
 
     const [isLoadingQueue, setLoadingQueue] = useState(true);
     const [queueData, setQueueData] = useState(undefined);
@@ -17,7 +18,11 @@ const Queue = ({ authToken }) => {
 
     useEffect(() => {
         getQueue();
-    }, [currentSongRef.current]);
+    }, []);
+
+    useEffect(() => {
+        getQueue();
+    }, [currentSongState]);
 
     const getQueue = async () => {
         try {
