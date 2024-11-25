@@ -1,19 +1,11 @@
 import { useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
 
-import OAuthLogin from '../Components/appwrite-oauth/appwrite-spotify.jsx';
 import GetPlayback from './spotify-player.jsx';
 
-import { sessionContext } from '../App.jsx';
+import { UseSessionContext } from '../logic-necessary/session-provider.jsx';
 
 const Homepage = () => {
-    const sessionInfo = useContext(sessionContext);
-    const navigate = useNavigate();
-
-    const handleLoginSuccess = (currentSession) => {
-        sessionInfo.setSession(currentSession); // Save session info
-        navigate('/success'); // Redirect to success route
-    };
+    const sessionInfo = UseSessionContext();
 
     return (
         <>

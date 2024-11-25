@@ -19,7 +19,7 @@ const Playback = ({ authToken }) => {
     useEffect(() => {
         getCurrentPlayback();
         currentSongRef.current = currentSongState;
-        const interval = setInterval(getCurrentPlayback, 90000);
+        const interval = setInterval(getCurrentPlayback, 1000);
 		return () => {
 			clearInterval(interval);
 		};
