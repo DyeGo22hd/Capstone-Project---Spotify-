@@ -6,198 +6,244 @@ import zipfile
 import json
 import os
 import matplotlib.pyplot as plt
+import plotly.graph_objects as go
+import pandas as pd
+from tkinter import Tk
+from tkinter.filedialog import askopenfilename
 
 
 class SpotifyClient:
     def __init__(self):
-        # Set up Spotify OAuth with your credentials and redirect URI
-        self.sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
-            client_id="a1b69bc66206450b90556539dce74413",
-            client_secret="fb50ad80e74840968e1e3047174a3ae2",
-            redirect_uri="http://localhost:3000/callback",
-            scope="user-top-read user-read-recently-played playlist-read-private"
-        ))
+        try:
+            self.sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
+                client_id="a1b69bc66206450b90556539dce74413",
+                client_secret="fb50ad80e74840968e1e3047174a3ae2",
+                redirect_uri="http://localhost:3000/callback",
+                scope="user-top-read user-read-recently-played playlist-read-private playlist-modify-private playlist-modify-public"
+            ))
 
-    def get_top_artists(self, limit=5, time_range='long_term'):
-        # Fetch top artists data from Spotify API
-        return self.sp.current_user_top_artists(limit=limit, time_range=time_range)
+            # Variables to store fetched data
+            self.top_artists_data = None
+            self.top_tracks_data = None
+            self.playlists_data = None
+            self.recent_tracks_data = None
+            self.streaming_history_data = []
 
-    def display_top_artist(self, limit):
-        top_artists = self.get_top_artists(limit=limit)
 
-        print(f"\nReal-Time Top {limit} Artists/Groups:\n")
-        for idx, artist in enumerate(top_artists['items'], 1):
-            artist_name = artist['name']
-            genres = ', '.join(artist['genres'])
-            print(f"{idx}. {artist_name} (Genres: {genres})")
+        except Exception as e:
+            print(f"Error initializing Spotify client: {e}")
 
-    def get_top_tracks(self, limit=10, time_range="short_term"):
-        # Fetch the user's top tracks
-        return self.sp.current_user_top_tracks(limit=limit, time_range=time_range)
+    # Fetch and store user top artists
+    def fetch_top_artists(self, limit=5, time_range='long_term'):
+        try:
+            self.top_artists_data = self.sp.current_user_top_artists(limit=limit, time_range=time_range)
+            print("Top artists data fetched successfully.")
+        except Exception as e:
+            print(f"Error fetching top artists: {e}")
 
-    def display_top_tracks(self, limit):
-        top_tracks = self.get_top_tracks(limit)  # Corrected call to get_top_tracks
-
-        # Print top tracks
-        print(f"\nTop {limit} Tracks:\n")
-        for idx, track in enumerate(top_tracks['items'], 1):
-            artist_name = track['artists'][0]['name']  # Artist's name
-            track_name = track['name']                 # Track's name
-            print(f"{idx}. {track_name} by {artist_name}")
-
-    def get_playlist(self, limit):
-        # Fetch the user's playlists
-        return self.sp.current_user_playlists(limit=limit)
-
-    def display_playlists(self, limit):
-        playlists = self.get_playlist(limit)
-
-        # Display playlists
-        print(f"\nUser's Playlists (Showing {limit}):\n")
-        if not playlists['items']:
-            print("No playlists found.")
+    # Display stored top artists
+    def display_top_artists(self):
+        if not self.top_artists_data:
+            print("No top artists data available. Fetch it first.")
             return
 
-        for idx, playlist in enumerate(playlists['items'], 1):
-            playlist_name = playlist['name']
-            playlist_id = playlist['id']
-            num_tracks = playlist['tracks']['total']
-            print(f"{idx}. {playlist_name} (ID: {playlist_id}, Total Tracks: {num_tracks})")
+        print(f"\nTop Artists:\n")
+        for idx, artist in enumerate(self.top_artists_data.get('items', []), 1):
+            artist_name = artist['name']
+            genres = ', '.join(artist.get('genres', []))
+            print(f"{idx}. {artist_name} (Genres: {genres})")
 
-    def get_recent_tracks(self, limit=50):
-        return self.sp.current_user_recently_played(limit=limit)
+    # Fetch and store user top tracks
+    def fetch_top_tracks(self, limit=10, time_range="short_term"):
+        try:
+            self.top_tracks_data = self.sp.current_user_top_tracks(limit=limit, time_range=time_range)
+            print("Top tracks data fetched successfully.")
+        except Exception as e:
+            print(f"Error fetching top tracks: {e}")
 
-    def display_recent_tracks(self, limit=50):
-        recent_tracks = self.get_recent_tracks(limit) 
+    # Display stored top tracks
+    def display_top_tracks(self):
+        if not self.top_tracks_data:
+            print("No top tracks data available. Fetch it first.")
+            return
 
-        print(f"\nMost Recent {limit} Tracks Played:\n")
-        for idx, item in enumerate(recent_tracks['items'], 1):
+        print(f"\nTop Tracks:\n")
+        for idx, track in enumerate(self.top_tracks_data.get('items', []), 1):
+            artist_name = track['artists'][0]['name']
+            track_name = track['name']
+            print(f"{idx}. {track_name} by {artist_name}")
+
+   
+    # Fetch and store recent tracks
+    def fetch_recent_tracks(self, limit=50):
+        try:
+            self.recent_tracks_data = self.sp.current_user_recently_played(limit=limit)
+            print("Recent tracks data fetched successfully.")
+        except Exception as e:
+            print(f"Error fetching recent tracks: {e}")
+
+    # Display stored recent tracks
+    def display_recent_tracks(self):
+        if not self.recent_tracks_data:
+            print("No recent tracks data available. Fetch it first.")
+            return
+
+        print(f"\nMost Recent Tracks Played:\n")
+        for idx, item in enumerate(self.recent_tracks_data.get('items', []), 1):
             track = item['track']
             artist_name = track['artists'][0]['name']
             track_name = track['name']
             played_at = item['played_at']
             print(f"{idx}. {track_name} by {artist_name} (Played at: {played_at})")
 
-    def extract_and_load_json(self, zip_path, output_folder="extracted_data"):
-        # Ensure the output directory exists
-        os.makedirs(output_folder, exist_ok=True)
-        
-        # Open the zip file
-        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-            # Define the target JSON files and their corresponding attributes
-            target_files = {
-                "Spotify Account Data/Marquee.json": "marquee_data",
-                "Spotify Account Data/SearchQueries.json": "search_queries_data",
-                "Spotify Account Data/StreamingHistory_music_0.json": "streaming_history_data"
-            }
+    #Need to change this for the extended history and clean that data
+    def extract_and_load_json(self):
+            # Use Tkinter to open file dialog
+        Tk().withdraw()  # Hide the root Tkinter window
+        file_path = askopenfilename(
+            title="Select your Spotify JSON file",
+            filetypes=[("All Files", "*.*"), ("JSON Files", "*.json")]
+        )
 
-            for file, attribute_name in target_files.items():
-                if file in zip_ref.namelist():
-                    # Extract and load JSON data from each file
-                    with zip_ref.open(file) as f:
-                        file_data = json.load(f)
-                        setattr(self, attribute_name, file_data)
-                        print(f"Loaded data from {file}")
+        if not file_path:
+            print("No file selected.")
+            return
 
-                    # Save the JSON content to the output folder
-                    base_name = os.path.basename(file)
-                    output_path = os.path.join(output_folder, base_name)
-                    with open(output_path, 'w') as output_file:
-                        json.dump(file_data, output_file)
-                        print(f"Data saved to {output_path}")
 
-    def display_streaming_history(self, limit=50):
-        
+        required_filename = "StreamingHistory_music_0.json"
+
+        # Validate the filename
+        if os.path.basename(file_path) != required_filename:
+            print(f"Error: The uploaded file must be named '{required_filename}'.")
+            return
+
+        try:
+            # Load the JSON data
+            with open(file_path, 'r', encoding='utf-8') as file:
+                data = json.load(file)
+
+            # Ensure the data is sorted by the 'endTime' field (most recent last)
+            data.sort(key=lambda x: datetime.strptime(x['endTime'], '%Y-%m-%d %H:%M'), reverse=True)
+
+            # Store the data in the class attribute
+            self.streaming_history_data = data
+            print(f"Successfully loaded and sorted {len(data)} tracks from '{file_path}'.")
+
+        except Exception as e:
+            print(f"Error loading JSON file: {e}")
+
+    def filter_tracks_by_date(self):
+        """
+        Filters and displays tracks from streaming history starting from the most recent
+        till a user-specified month and year.
+
+        Prompts the user for the target month and year.
+        """
         if not self.streaming_history_data:
             print("No streaming history data available.")
             return
 
-        # Enforce a maximum limit of 200
-        limit = min(limit, 250)
+        # Ensure data is sorted by 'endTime' (most recent first)
+        self.streaming_history_data.sort(
+            key=lambda x: datetime.strptime(x['endTime'], '%Y-%m-%d %H:%M'), reverse=True
+        )
 
-        # Reverse the streaming history to show the most recent tracks first
-        recent_tracks = self.streaming_history_data[-limit:][::-1]
-
-        print(f"\nMost Recent {limit} Tracks Played:\n")
-        for idx, record in enumerate(recent_tracks, 1):
-            end_time = record.get("endTime", "N/A")
-            artist_name = record.get("artistName", "Unknown Artist")
-            track_name = record.get("trackName", "Unknown Track")
-            ms_played = record.get("msPlayed", 0)
-            seconds_played = ms_played // 1000
-
-            print(f"{idx}. {track_name} by {artist_name} (End Time: {end_time}, Duration: {seconds_played} seconds)")
-
-    def plot_recent_tracks_timeline(self, limit=50):
-            """Plots a timeline of the recently played tracks."""
-            recent_tracks = self.get_recent_tracks(limit)['items']
-            played_times = []
-            track_names = []
-
-            for item in recent_tracks:
-                played_at = item['played_at']
-                track_name = item['track']['name']
-                played_times.append(datetime.fromisoformat(played_at[:-1]))  # Convert to datetime
-                track_names.append(track_name)
-
-            plt.figure(figsize=(12, 6))
-            plt.plot(played_times, range(len(played_times)), marker='o', linestyle='-', color='b')
-            plt.yticks(range(len(track_names)), track_names)
-            plt.title(f'Timeline of Recently Played Tracks (Last {limit} Tracks)')
-            plt.xlabel('Time Played')
-            plt.ylabel('Tracks')
-            plt.xticks(rotation=45)
-            plt.grid()
-            plt.tight_layout()
-            plt.show()
-
-    def plot_streaming_history_timeline(self, limit=50):
-        """Plots a timeline of the streaming history."""
-        if not self.streaming_history_data:
-            print("No streaming history data available.")
+        try:
+            # Prompt the user for a month and year
+            year = int(input("Enter the year (e.g., 2023): "))
+            month = int(input("Enter the month (1-12): "))
+            cutoff_date = datetime(year, month, 1)
+        except ValueError:
+            print("Invalid input. Please enter a valid year and month.")
             return
 
-        # Enforce a maximum limit
-        limit = min(limit, len(self.streaming_history_data))
-        recent_history = self.streaming_history_data[-limit:]
-        played_times = []
-        track_names = []
+        print(f"\nShowing tracks from the most recent until {cutoff_date.strftime('%B %Y')}:\n")
 
-        for record in recent_history:
-            end_time = record.get("endTime")
-            track_name = record.get("trackName", "Unknown Track")
-            played_times.append(datetime.fromisoformat(end_time[:-1]))  # Convert to datetime
-            track_names.append(track_name)
+        # Filter and display tracks
+        for track in self.streaming_history_data:
+            track_date = datetime.strptime(track['endTime'], '%Y-%m-%d %H:%M')
 
-        plt.figure(figsize=(12, 6))
-        plt.plot(played_times, range(len(played_times)), marker='o', linestyle='-', color='g')
-        plt.yticks(range(len(track_names)), track_names)
-        plt.title(f'Timeline of Streaming History (Last {limit} Tracks)')
-        plt.xlabel('Time Played')
-        plt.ylabel('Tracks')
-        plt.xticks(rotation=45)
-        plt.grid()
-        plt.tight_layout()
-        plt.show()
+            # Stop if the track's date is earlier than the cutoff date
+            if track_date < cutoff_date:
+                break
+
+            print(f"{track['trackName']} by {track['artistName']} (Played at: {track['endTime']})")
+
+    # def save_recent_tracks_timeline(self, output_path="recent_tracks_timeline.png"):
+    #     """
+    #     Creates and saves a visually appealing timeline plot for recent track history using Plotly,
+    #     with adjusted text positions to prevent overlap.
+
+    #     :param output_path: Path where the timeline image will be saved.
+    #     """
+    #     if not self.recent_tracks_data or 'items' not in self.recent_tracks_data:
+    #         print("No recent tracks data available.")
+    #         return
+
+    #     # Prepare data for the timeline
+    #     timeline_data = []
+    #     for idx, item in enumerate(self.recent_tracks_data['items']):
+    #         track = item['track']
+    #         played_at = datetime.strptime(item['played_at'], '%Y-%m-%dT%H:%M:%S.%fZ')
+    #         track_name = track['name']
+    #         artist_name = track['artists'][0]['name']
+
+    #         # Alternate y-offsets for text placement
+    #         offset = 1 if idx % 2 == 0 else -1
+
+    #         timeline_data.append({
+    #             "Played At": played_at,
+    #             "Track Name": track_name,
+    #             "Artist": artist_name,
+    #             "Offset": offset
+    #         })
+
+    #     # Convert to DataFrame
+    #     df = pd.DataFrame(timeline_data)
+
+    #     # Create the Plotly timeline
+    #     fig = go.Figure()
+
+    #     # Add scatter trace for track points
+    #     fig.add_trace(
+    #         go.Scatter(
+    #             x=df["Played At"],
+    #             y=[1] * len(df),  # Fixed y-axis for timeline
+    #             mode="markers",
+    #             marker=dict(size=10, color="blue"),
+    #             hovertemplate="<b>Track:</b> %{customdata[0]}<br><b>Played At:</b> %{x}<extra></extra>",
+    #             name="Track Played",
+    #             customdata=df[["Track Name", "Artist"]],  # Pass extra info for hover
+    #         )
+    #     )
+
+    #     # Add a separate trace for text labels with offsets
+    #     fig.add_trace(
+    #         go.Scatter(
+    #             x=df["Played At"],
+    #             y=df["Offset"],  # Use offsets for alternate text placement
+    #             mode="text",
+    #             text=df["Track Name"],
+    #             textposition="top center",
+    #             hoverinfo="skip",  # Hide hover for text labels
+    #             showlegend=False,  # No legend for text
+    #         )
+    #     )
+
+    #     # Update layout for better readability
+    #     fig.update_layout(
+    #         title="Recent Track History Timeline",
+    #         xaxis=dict(title="Date and Time Played", showgrid=True),
+    #         yaxis=dict(title="", showticklabels=False),
+    #         plot_bgcolor="white",
+    #         height=500,
+    #         margin=dict(l=50, r=50, t=50, b=50),
+    #     )
+
+    #     # Save the plot as an image
+    #     fig.write_image(output_path)
+    #     print(f"Timeline saved as {output_path}")
+
+    
 
 
-# Instantiate SpotifyClient and fetch real-time top artists
-spotify_client = SpotifyClient()
-spotify_client.display_top_artist(5)
-spotify_client.display_playlists(5)
-spotify_client.display_top_tracks(5)
-spotify_client.display_recent_tracks(50)
-
-print()
-#Open and Fetch data from Zip
-path = input("Location Path for my_spotify_data_zip: ")
-spotify_client.extract_and_load_json(path,'my_spotify_data.zip')
-
-# Access the loaded data for each JSON file
-# print("Marquee Data:", spotify_client.marquee_data)
-# print("Search Queries Data:", spotify_client.search_queries_data)
-# print("Streaming History Data:", spotify_client.streaming_history_data)
-spotify_client.display_streaming_history(250)
-
-spotify_client.plot_recent_tracks_timeline(limit=50)
-# spotify_client.plot_streaming_history_timeline(limit=250)
