@@ -4,46 +4,35 @@ import pandas as pd
 from datetime import datetime
 
 # Spotify API credentials
-client_id = 'b24b1c78e21f447f8c7dce1d2a9d06c5'
-client_secret = 'c83d6bbfcf884fc488c664d61600f81e'
+client_id = 'f3118b77a7154acb899ec1d17391c04c'
+client_secret = '7797aa9c0c284fab822a42b3869449bf'
 
 # Initialize Spotify client
-client_credentials_manager = SpotifyClientCredentials(client_id="b24b1c78e21f447f8c7dce1d2a9d06c5", client_secret="c83d6bbfcf884fc488c664d61600f81e")
+client_credentials_manager = SpotifyClientCredentials(client_id=client_id, client_secret=client_secret)
 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
-
-def get_playlist_artists(playlist_id):
-    results = sp.playlist_tracks(playlist_id)
-    artists = []
-    for item in results['items']:
-        if item['track']:
-            for artist in item['track']['artists']:
-                artists.append({
-                    'name': artist['name'],
-                    'id': artist['id'],
-                    'popularity': sp.artist(artist['id'])['popularity']
-                })
-    return artists
 
 def get_trending_artists(limit=200):
     current_date = datetime.now().strftime("%Y-%m-%d")
     
-    playlists = [
-        "37i9dQZEVXbLiRSasKsNU9",  # Viral 50 Global
-        "37i9dQZEVXbMDoHDwVN2tF",  # Top 50 Global
-        "37i9dQZF1DXcBWIGoYBM5M",  # Today's Top Hits
-        "37i9dQZF1DX0XUsuxWHRQd",  # RapCaviar
-        "37i9dQZF1DX10zKzsJ2jva",  # Teen Party
-    ]
-    
+    # Search for top tracks
+    search_queries = ['pop', 'rap', 'rock', 'hip hop', 'top']
     all_artists = []
-    for playlist in playlists:
-        all_artists.extend(get_playlist_artists(playlist))
+    
+    for query in search_queries:
+        results = sp.search(q=query, type='track', limit=50)
+        for track in results['tracks']['items']:
+            for artist in track['artists']:
+                all_artists.append({
+                    'name': artist['name'],
+                    'id': artist['id'],
+                    'popularity': sp.artist(artist['id'])['popularity']
+                })
     
     # Remove duplicates and sort by popularity
     unique_artists = list({v['id']:v for v in all_artists}.values())
     sorted_artists = sorted(unique_artists, key=lambda x: x['popularity'], reverse=True)
     
-    # Get the top 200 artists
+    # Get the top artists
     top_artists = sorted_artists[:limit]
     
     # Create a DataFrame
@@ -60,10 +49,6 @@ def get_trending_artists(limit=200):
 
 if __name__ == "__main__":
     trending_artists = get_trending_artists()
-    
-    # Display all 200 artists
     pd.set_option('display.max_rows', None)
     print(trending_artists)
-
-    # Reset display options
     pd.reset_option('display.max_rows')
