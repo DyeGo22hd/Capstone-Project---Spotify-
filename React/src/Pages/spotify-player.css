@@ -1,11 +1,16 @@
-.box{
-    display:flex;
-    flex-direction:row;
-    justify-content:space-between;
+.box {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    height: calc(100% - 120px - 16vh);
 }
 
 .list-container{
     margin-left:20px;
     margin-right:20px;
-    width: 50%;
+    width: 45vw;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }

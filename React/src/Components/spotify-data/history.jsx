@@ -51,11 +51,9 @@ const History = ({ authToken }) => {
 
     if (!isLoadingHistory && historyData) {
         historyHTML = (
-            <div>
-                <TracksList>
-                    {historyData.map((item) => (<TrackHTML key={`${item.track.id}${item.played_at}`} artists={item.track.artists} name={item.track.name} when={item.played_at} length={item.track.duration_ms} />))}
-                </TracksList>
-            </div>
+            <TracksList>
+                {historyData.map((item) => (<TrackHTML key={`${item.track.id}${item.played_at}`} imageLink={item['track']['album']['images'][0]['url']} artists={item.track.artists} name={item.track.name} when={item.played_at} length={item.track.duration_ms} />))}
+            </TracksList>
         );
     }
     else if (!isLoadingHistory) {

@@ -70,13 +70,11 @@ const Playback = ({ authToken }) => {
         }
         else {
             let currentData = (
-                <TrackHTML artists={playbackData.artists} name={playbackData.name} when={new Date()} length={playbackData.duration_ms} />
+                <TrackHTML imageLink={playbackData['album']['images'][0]['url']} artists={playbackData.artists} name={playbackData.name} when={new Date()} length={playbackData.duration_ms} />
             );
 
             playbackHTML = (
-                <div>
-                    {currentData}
-                </div>
+                currentData
             )
         }
     }

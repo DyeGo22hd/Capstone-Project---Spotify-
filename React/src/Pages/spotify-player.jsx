@@ -44,14 +44,17 @@ const GetCurrent = ({ authToken }) => {
     );
 
     return (
-        <div>
-            {currentHTML}
-            <hr></hr>
+        <>
+            <div className='curent-player'>
+                {currentHTML}
+                <hr style={{ width: '90%' }}></hr>
+            </div>
+            
             <div className='box'>
                 {historyHTML}
                 {queueHTML}
             </div>
-        </div>
+        </>
     );
 };
 

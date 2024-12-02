@@ -1,8 +1,7 @@
 #root {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 2rem;
+    width: 100vw;
     text-align: center;
+    height: 100vh;
 }
 
 .logo {
@@ -42,4 +41,16 @@
 
 .read-the-docs {
     color: #888;
+}
+
+.App {
+    height: 100%;
+    width: 100%;
+}
+
+.Page {
+    display: flex;
+    flex-direction: column;
+    padding-top: 52px;
+    height: calc(100vh - 52px);
 }

@@ -57,15 +57,13 @@ const Queue = ({ authToken }) => {
         if (queueData['queue'] && queueData['queue'].length > 0) {
             futureData = (
                 <TracksList>
-                    {queueData['queue'].map((item) => (<TrackHTML key={item.id} artists={item.artists} name={item.name} when={new Date()} length={item.duration_ms} />))}
+                    {queueData['queue'].map((item) => (<TrackHTML key={item.id} imageLink={item['album']['images'][0]['url']} artists={item.artists} name={item.name} when={new Date()} length={item.duration_ms} />))}
                 </TracksList>
             );
         };
 
         queueHTML = (
-            <div>
-                {futureData}
-            </div>
+            futureData
         );
     }
     else if (!isLoadingQueue) {

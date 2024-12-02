@@ -1,4 +1,6 @@
-const TrackHTML = ({artists, name, when, length}) => {
+import './track-container.css';
+
+const TrackHTML = ({ imageLink, artists, name, when, length }) => {
     const formatDuration = (duration_ms) => {
         const totalSeconds = Math.floor(duration_ms / 1000); // Convert ms to seconds
         const minutes = Math.floor(totalSeconds / 60); // Calculate minutes
@@ -39,12 +41,21 @@ const TrackHTML = ({artists, name, when, length}) => {
 
     return(
         <div>
-            <h4> Track </h4>
-            <hr style={{width:'25%'}}></hr>
-            <p> Artists: {artistNames} </p>
-            <p> Name: {name} </p>
-            <p> Length: {formattedLength} </p>
-            <p> Played: {formattedDate} </p>
+            <div className='track'>
+                <div className='track-cover'>
+                    <img src={imageLink} alt="Album Cover" ></img>
+                </div>
+                <div className='track-information'>
+                    <div>
+                        <p> {name} </p>
+                        <p> {artistNames} </p>
+                    </div>
+                    <div>
+                        <p> Length: {formattedLength} | Played: {formattedDate} </p>
+                    </div>
+                </div>
+            </div>
+            <hr style={{ width: '25%' }}></hr>
         </div>
     );
 };

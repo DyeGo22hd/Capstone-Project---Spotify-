@@ -1,5 +1,5 @@
 .tracks-list {
-    max-height: 25vh;
+    flex-grow: 1;
     overflow-y: auto;
     min-width: 25%;
 }

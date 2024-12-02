@@ -1,0 +1,36 @@
+.track {
+    display: flex;
+    flex-direction: row;
+    height: 16vh;
+    width: 100%;
+    container-type: inline-size;
+}
+
+.track-information {
+    padding-left: 20px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    width: calc(100% - 16vh - 20px);
+
+    p {
+        vertical-align: top;
+        margin-block-start: 0;
+        margin-block-end: 0;
+        font-size: 2cqh;
+
+        width: 100%;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+
+        text-align: left;
+    }
+}
+
+.track-cover img{
+    height: 100%;
+}
+
