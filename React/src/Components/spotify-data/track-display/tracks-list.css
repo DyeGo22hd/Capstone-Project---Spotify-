@@ -1,0 +1,5 @@
+.tracks-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    min-width: 25%;
+}
