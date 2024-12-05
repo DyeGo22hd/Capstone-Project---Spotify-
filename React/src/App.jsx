@@ -1,6 +1,5 @@
 import { useState, createContext, useEffect } from 'react'
 import { BrowserRouter as Router, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
-import viteLogo from '/vite.svg'
 import './App.css'
 
 import { account } from './Components/appwrite-oauth/appwrite-config.js';
