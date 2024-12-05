@@ -10,6 +10,7 @@ const Playback = ({ authToken }) => {
 
     const [isLoadingPlayback, setLoadingPlayback] = useState(true);
     const [playbackData, setPlaybackData] = useState(undefined);
+    var progress;
 
     const playbackLink = 'https://api.spotify.com/v1/me/player';
     const authHeader = new Headers();
@@ -19,7 +20,8 @@ const Playback = ({ authToken }) => {
     useEffect(() => {
         getCurrentPlayback();
         currentSongRef.current = currentSongState;
-        const interval = setInterval(getCurrentPlayback, 1000);
+        const interval = setInterval(getCurrentPlayback, playbackData == null ? 1000 : playbackData.duration_ms - progress);
+        console.log(`Refresh in: ${interval}`);
 		return () => {
 			clearInterval(interval);
 		};
@@ -39,6 +41,7 @@ const Playback = ({ authToken }) => {
             }
 
             const json = await response.json();
+            progress = json.progress_ms;
             setPlaybackData(json['item']);
 
             if (playbackData) {
