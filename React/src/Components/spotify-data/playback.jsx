@@ -45,7 +45,6 @@ const Playback = ({ authToken }) => {
             setPlaybackData(json['item']);
 
             progress = json.progress_ms;
-            console.log(JSON.stringify(json.actions.disallows));
             setPlaying(json.actions.disallows.resuming);
 
             if (playbackData) {
