@@ -3,7 +3,7 @@
     flex-direction: row;
     justify-content: space-between;
 
-    height: calc(100% - 120px - 16vh);
+    height: calc(100% - 160px - 16vh);
 }
 
 .list-container{
