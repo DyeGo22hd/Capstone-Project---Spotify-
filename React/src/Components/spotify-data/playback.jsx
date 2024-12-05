@@ -10,6 +10,7 @@ const Playback = ({ authToken }) => {
 
     const [isLoadingPlayback, setLoadingPlayback] = useState(true);
     const [playbackData, setPlaybackData] = useState(undefined);
+    const [playing, setPlaying] = useState(undefined);
     var progress;
 
     const playbackLink = 'https://api.spotify.com/v1/me/player';
@@ -20,12 +21,12 @@ const Playback = ({ authToken }) => {
     useEffect(() => {
         getCurrentPlayback();
         currentSongRef.current = currentSongState;
+
         const interval = setInterval(getCurrentPlayback, playbackData == null ? 1000 : playbackData.duration_ms - progress);
-        console.log(`Refresh in: ${interval}`);
 		return () => {
 			clearInterval(interval);
 		};
-	}, []);
+    }, []);
 
     const getCurrentPlayback = async () => {
         try {
@@ -41,8 +42,11 @@ const Playback = ({ authToken }) => {
             }
 
             const json = await response.json();
-            progress = json.progress_ms;
             setPlaybackData(json['item']);
+
+            progress = json.progress_ms;
+            console.log(JSON.stringify(json.actions.disallows));
+            setPlaying(json.actions.disallows.resuming);
 
             if (playbackData) {
                 if (playbackData.id != currentSongState) {
@@ -82,7 +86,81 @@ const Playback = ({ authToken }) => {
         }
     }
 
-    return playbackHTML;
+    //----------------------------------------------------------------------------------------------
+
+
+    const resumeLink = 'https://api.spotify.com/v1/me/player/play';
+    const pauseLink = 'https://api.spotify.com/v1/me/player/pause';
+    const skipLink = 'https://api.spotify.com/v1/me/player/next';
+    const prevLink = 'https://api.spotify.com/v1/me/player/previous';
+
+    const ResumeTrack = async () => {
+        await fetch(resumeLink, {
+            method: "PUT",
+            headers: authHeader,
+        });
+    }
+    const PauseTrack = async () => {
+        await fetch(pauseLink, {
+            method: "PUT",
+            headers: authHeader,
+        });
+    }
+    const NextTrack = async () => {
+        await fetch(skipLink, {
+            method: "POST",
+            headers: authHeader,
+        });
+    }
+    const PrevTrack = async () => {
+        await fetch(prevLink, {
+            method: "POST",
+            headers: authHeader,
+        });
+    }
+
+    var HTML_Play_Button = (
+        <button onClick={ResumeTrack}>PLAY</button>
+    )
+    var HTML_Pause_Button = (
+        <button onClick={PauseTrack}>PAUSE</button>
+    )
+    var HTML_Skip_Button = (
+        <button onClick={NextTrack}>NEXT</button>
+    )
+    var HTML_Prev_Button = (
+        <button onClick={PrevTrack}>PREV</button>
+    )
+
+
+    var playerHTML = <>playing not known</>;
+
+    if (playing) {
+        playerHTML = (
+            <div className='player'>
+                {HTML_Prev_Button}
+                {HTML_Pause_Button}
+                {HTML_Skip_Button}
+            </div>
+        )
+    }
+    else {
+        playerHTML = (
+            <div className='player'>
+                {HTML_Prev_Button}
+                {HTML_Play_Button}
+                {HTML_Skip_Button}
+            </div>
+        )
+    }
+
+
+    return (
+        <>
+            { playbackHTML}
+            { playerHTML }
+        </>
+    );
 };
 
 Playback.propTypes = {

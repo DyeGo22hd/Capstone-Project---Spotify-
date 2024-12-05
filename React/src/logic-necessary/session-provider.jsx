@@ -10,10 +10,10 @@ const SessionProvider = ({ children }) => {
         const checkSession = async () => {
             try {
                 const currentSession = await account.getSession('current');
-                console.log('Current session:', currentSession);
+                //console.log('Current session:', currentSession);
                 setSession(currentSession); // Save session info
             } catch (error) {
-                console.log('No active session:', error);
+                //console.log('No active session:', error);
                 setSession(null);
             }
         };
