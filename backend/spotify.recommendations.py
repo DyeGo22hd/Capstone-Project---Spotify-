@@ -145,7 +145,7 @@ class SpotifyClient:
     def _recommend_by_audio_features(self):
         try:
             print("\nLet's find your perfect sound!")
-            mood = input("What's your mood? (happy/sad/energetic/chill): ").lower()
+            mood = input("What's your mood today? (happy/sad/energetic/chill): ").lower()
             
             # Map moods to search queries
             mood_queries = {
