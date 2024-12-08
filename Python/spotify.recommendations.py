@@ -1,6 +1,5 @@
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
-import requests
 
 class SpotifyClient:
     def __init__(self):
@@ -19,7 +18,7 @@ class SpotifyClient:
             genres = ', '.join(artist['genres'])
             print(f"{idx}. {artist_name} (Genres: {genres})")
 
-    def get_recent_tracks(self, limit=50, time_range="medium_term"):
+    def get_recent_tracks(self, limit=50):
         recent_tracks = self.sp.current_user_recently_played(limit=limit)
         print(f"\nMost Recent {limit} Tracks Played:\n")
         for idx, item in enumerate(recent_tracks['items'], 1):
@@ -64,38 +63,113 @@ class SpotifyClient:
         print("Choose your recommendation source:")
         print("1. Search by Song")
         print("2. Use Your Playlist")
+        print("3. Based on Artist")
+        print("4. Based on Genre")
+        print("5. Based on Your Top Tracks")
+        print("6. Based on Audio Features")
         
-        choice = input("\nEnter your choice (1-2): ")
+        choice = input("\nEnter your choice (1-6): ")
         
         if choice == '1':
-            print("Available moods: happy, sad, energetic, chill, party")
-            song_name = input("\nEnter a song you like: ")
-            mood = input("Enter your desired mood: ").lower()
-            
-            results = self.sp.search(q=song_name, type='track', limit=1)
-            if not results['tracks']['items']:
-                print("Song not found!")
-                return
-            
-            track = results['tracks']['items'][0]
-            artist_id = track['artists'][0]['id']
-            
-            top_tracks = self.sp.artist_top_tracks(artist_id)
-            
-            print(f"\nRecommended tracks based on {track['name']}:")
-            for i, rec in enumerate(top_tracks['tracks'][:5], 1):
-                print(f"{i}. {rec['name']} by {rec['artists'][0]['name']}")
-                
+            self._recommend_by_song()
         elif choice == '2':
-            playlist = self.sp.playlist('596GIcpIGocwj41T0zcn7d')
-            seed_track = playlist['tracks']['items'][0]['track']
-            artist_id = seed_track['artists'][0]['id']
+            self._recommend_by_playlist()
+        elif choice == '3':
+            self._recommend_by_artist()
+        elif choice == '4':
+            self._recommend_by_genre()
+        elif choice == '5':
+            self._recommend_by_top_tracks()
+        elif choice == '6':
+            self._recommend_by_audio_features()
+        else:
+            print("Great! Let's try a number between 1-6 for the best experience.")
+
+    def _recommend_by_song(self):
+        print("\nLet's find similar songs!")
+        song_name = input("Enter a song you like: ")
+        
+        results = self.sp.search(q=song_name, type='track', limit=5)
+        print(f"\nHere are similar tracks you might enjoy:")
+        for i, track in enumerate(results['tracks']['items'], 1):
+            print(f"{i}. {track['name']} by {track['artists'][0]['name']}")
+
+    def _recommend_by_playlist(self):
+        playlists = self.sp.current_user_playlists(limit=5)
+        print("\nSelect a playlist:")
+        for idx, playlist in enumerate(playlists['items'], 1):
+            print(f"{idx}. {playlist['name']}")
+        
+        try:
+            playlist_choice = int(input("\nEnter playlist number: ")) - 1
+            if 0 <= playlist_choice < len(playlists['items']):
+                playlist = self.sp.playlist(playlists['items'][playlist_choice]['id'])
+                results = self.sp.search(
+                    q=f"genre:{playlist['name']}", 
+                    type='track', 
+                    limit=5
+                )
+                print("\nTracks you might like based on this playlist:")
+                for i, track in enumerate(results['tracks']['items'], 1):
+                    print(f"{i}. {track['name']} by {track['artists'][0]['name']}")
+        except:
+            self._get_popular_fallback()
+
+    def _recommend_by_artist(self):
+        artist_name = input("\nEnter an artist name: ")
+        results = self.sp.search(q=artist_name, type='track', limit=5)
+        
+        print(f"\nTop tracks you might enjoy:")
+        for i, track in enumerate(results['tracks']['items'], 1):
+            print(f"{i}. {track['name']} by {track['artists'][0]['name']}")
+
+    def _recommend_by_genre(self):
+        print("\nPopular genres:")
+        popular_genres = ['pop', 'rock', 'hip-hop', 'dance', 'indie', 'electronic', 'r&b', 'jazz', 'classical', 'metal']
+        for i, genre in enumerate(popular_genres, 1):
+            print(f"{i}. {genre}")
+        
+        genre_choice = input("\nEnter a genre from the list: ")
+        results = self.sp.search(q=f"genre:{genre_choice}", type='track', limit=5)
+        
+        print(f"\nTop tracks for {genre_choice}:")
+        for i, track in enumerate(results['tracks']['items'], 1):
+            print(f"{i}. {track['name']} by {track['artists'][0]['name']}")
+
+    def _recommend_by_top_tracks(self):
+        results = self.sp.search(q="year:2023", type='track', limit=5)
+        print("\nFresh tracks picked for you:")
+        for i, track in enumerate(results['tracks']['items'], 1):
+            print(f"{i}. {track['name']} by {track['artists'][0]['name']}")
+
+    def _recommend_by_audio_features(self):
+        try:
+            print("\nLet's find your perfect sound!")
+            mood = input("What's your mood? (happy/sad/energetic/chill): ").lower()
             
-            print(f"\nRecommendations based on your playlist:")
-            recommendations = self.sp.artist_top_tracks(artist_id)
+            # Map moods to search queries
+            mood_queries = {
+                'happy': 'genre:pop year:2023',
+                'sad': 'genre:indie year:2023',
+                'energetic': 'genre:dance year:2023',
+                'chill': 'genre:chill year:2023'
+            }
             
-            for i, track in enumerate(recommendations['tracks'][:5], 1):
+            query = mood_queries.get(mood, 'genre:pop year:2023')
+            results = self.sp.search(q=query, type='track', limit=5)
+            
+            print(f"\nPerfect tracks for your {mood} mood:")
+            for i, track in enumerate(results['tracks']['items'], 1):
                 print(f"{i}. {track['name']} by {track['artists'][0]['name']}")
+                
+        except Exception as e:
+            self._get_popular_fallback()
+
+    def _get_popular_fallback(self):
+        results = self.sp.search(q="genre:pop year:2023", type='track', limit=5)
+        print("\nHot tracks right now:")
+        for i, track in enumerate(results['tracks']['items'], 1):
+            print(f"{i}. {track['name']} by {track['artists'][0]['name']}")
 
 def main():
     spotify_client = SpotifyClient()
@@ -108,4 +182,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
