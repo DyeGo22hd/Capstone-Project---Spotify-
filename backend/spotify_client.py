@@ -1,249 +1,144 @@
-import spotipy
-from spotipy.oauth2 import SpotifyOAuth
-import requests
-from datetime import datetime
-import zipfile
 import json
 import os
-import matplotlib.pyplot as plt
-import plotly.graph_objects as go
-import pandas as pd
-from tkinter import Tk
-from tkinter.filedialog import askopenfilename
+import pymysql
+from datetime import datetime
+from spotipy.oauth2 import SpotifyOAuth
+import spotipy
 
 
 class SpotifyClient:
     def __init__(self):
+        self.sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
+            client_id="b24b1c78e21f447f8c7dce1d2a9d06c5",
+            client_secret="c83d6bbfcf884fc488c664d61600f81e",
+            redirect_uri="https://cloud.appwrite.io/v1/account/sessions/oauth2/callback/spotify/66f9aeb700248be20f22",
+            scope="user-top-read user-read-recently-played"
+        ))
+        self.db_config = {
+            "host": "peepify-db.c7swoaco2oxs.us-east-2.rds.amazonaws.com",
+            "port": 3306,
+            "user": "peepify",
+            "password": "capstone499",
+            "database": "peepify_data"
+        }
+
+    def fetch_top_artists(self, limit=5, time_range="short_term"):
+        """
+        Fetch the user's top artists from Spotify.
+        """
         try:
-            self.sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
-                client_id="a1b69bc66206450b90556539dce74413",
-                client_secret="fb50ad80e74840968e1e3047174a3ae2",
-                redirect_uri="http://localhost:3000/callback",
-                scope="user-top-read user-read-recently-played playlist-read-private playlist-modify-private playlist-modify-public"
-            ))
-
-            # Variables to store fetched data
-            self.top_artists_data = None
-            self.top_tracks_data = None
-            self.playlists_data = None
-            self.recent_tracks_data = None
-            self.streaming_history_data = []
-
-
-        except Exception as e:
-            print(f"Error initializing Spotify client: {e}")
-
-    # Fetch and store user top artists
-    def fetch_top_artists(self, limit=5, time_range='long_term'):
-        try:
-            self.top_artists_data = self.sp.current_user_top_artists(limit=limit, time_range=time_range)
-            print("Top artists data fetched successfully.")
+            return self.sp.current_user_top_artists(limit=limit, time_range=time_range)
         except Exception as e:
             print(f"Error fetching top artists: {e}")
+            return None
 
-    # Display stored top artists
-    def display_top_artists(self):
-        if not self.top_artists_data:
-            print("No top artists data available. Fetch it first.")
-            return
-
-        print(f"\nTop Artists:\n")
-        for idx, artist in enumerate(self.top_artists_data.get('items', []), 1):
-            artist_name = artist['name']
-            genres = ', '.join(artist.get('genres', []))
-            print(f"{idx}. {artist_name} (Genres: {genres})")
-
-    # Fetch and store user top tracks
-    def fetch_top_tracks(self, limit=10, time_range="short_term"):
-        try:
-            self.top_tracks_data = self.sp.current_user_top_tracks(limit=limit, time_range=time_range)
-            print("Top tracks data fetched successfully.")
-        except Exception as e:
-            print(f"Error fetching top tracks: {e}")
-
-    # Display stored top tracks
-    def display_top_tracks(self):
-        if not self.top_tracks_data:
-            print("No top tracks data available. Fetch it first.")
-            return
-
-        print(f"\nTop Tracks:\n")
-        for idx, track in enumerate(self.top_tracks_data.get('items', []), 1):
-            artist_name = track['artists'][0]['name']
-            track_name = track['name']
-            print(f"{idx}. {track_name} by {artist_name}")
-
-   
-    # Fetch and store recent tracks
     def fetch_recent_tracks(self, limit=50):
+        """
+        Fetch the user's recent tracks from Spotify.
+        """
         try:
-            self.recent_tracks_data = self.sp.current_user_recently_played(limit=limit)
-            print("Recent tracks data fetched successfully.")
+            return self.sp.current_user_recently_played(limit=limit)
         except Exception as e:
             print(f"Error fetching recent tracks: {e}")
+            return None
 
-    # Display stored recent tracks
-    def display_recent_tracks(self):
-        if not self.recent_tracks_data:
-            print("No recent tracks data available. Fetch it first.")
-            return
+    def extract_and_load_json(self, file_path):
+        """
+        Extract data from a JSON file and save it to the database for the current user.
+        Supports both StreamingHistory and ExtendedHistory file types.
+        """
+        file_name = os.path.basename(file_path)
+        user_id = self.sp.current_user()['id']
 
-        print(f"\nMost Recent Tracks Played:\n")
-        for idx, item in enumerate(self.recent_tracks_data.get('items', []), 1):
-            track = item['track']
-            artist_name = track['artists'][0]['name']
-            track_name = track['name']
-            played_at = item['played_at']
-            print(f"{idx}. {track_name} by {artist_name} (Played at: {played_at})")
-
-    #Need to change this for the extended history and clean that data
-    def extract_and_load_json(self):
-            # Use Tkinter to open file dialog
-        Tk().withdraw()  # Hide the root Tkinter window
-        file_path = askopenfilename(
-            title="Select your Spotify JSON file",
-            filetypes=[("All Files", "*.*"), ("JSON Files", "*.json")]
-        )
-
-        if not file_path:
-            print("No file selected.")
-            return
-
-
-        required_filename = "StreamingHistory_music_0.json"
-
-        # Validate the filename
-        if os.path.basename(file_path) != required_filename:
-            print(f"Error: The uploaded file must be named '{required_filename}'.")
-            return
+        # Connect to the database
+        connection = pymysql.connect(**self.db_config)
 
         try:
-            # Load the JSON data
-            with open(file_path, 'r', encoding='utf-8') as file:
+            with open(file_path, 'r') as file:
                 data = json.load(file)
 
-            # Ensure the data is sorted by the 'endTime' field (most recent last)
-            data.sort(key=lambda x: datetime.strptime(x['endTime'], '%Y-%m-%d %H:%M'), reverse=True)
+            with connection.cursor() as cursor:
+                # Check if the user exists
+                cursor.execute("SELECT * FROM user_info WHERE current_user_id = %s", (user_id,))
+                user = cursor.fetchone()
 
-            # Store the data in the class attribute
-            self.streaming_history_data = data
-            print(f"Successfully loaded and sorted {len(data)} tracks from '{file_path}'.")
+                if not user:
+                    # Insert new user
+                    cursor.execute(
+                        "INSERT INTO user_info (current_user_id, raw_data_id, api_data_id) VALUES (%s, NULL, NULL)",
+                        (user_id,)
+                    )
+                    connection.commit()
+                    print(f"New user '{user_id}' created in the database.")
+
+                # Determine the type of JSON and update the appropriate field
+                if "Streaming_History_Audio" in file_name:
+                    cursor.execute(
+                        """
+                        INSERT INTO raw_data (raw_data_id, extended_id)
+                        VALUES ((SELECT raw_data_id FROM user_info WHERE current_user_id = %s), %s)
+                        ON DUPLICATE KEY UPDATE extended_id = VALUES(extended_id);
+                        """,
+                        (user_id, json.dumps(data))
+                    )
+                elif "StreamingHistory_music" in file_name:
+                    cursor.execute(
+                        """
+                        INSERT INTO raw_data (raw_data_id, streaming_history_id)
+                        VALUES ((SELECT raw_data_id FROM user_info WHERE current_user_id = %s), %s)
+                        ON DUPLICATE KEY UPDATE streaming_history_id = VALUES(streaming_history_id);
+                        """,
+                        (user_id, json.dumps(data))
+                    )
+
+                connection.commit()
+                print(f"JSON data from '{file_name}' successfully saved to the database for user '{user_id}'.")
 
         except Exception as e:
-            print(f"Error loading JSON file: {e}")
+            print(f"Error processing file '{file_name}': {e}")
 
-    def filter_tracks_by_date(self):
+        finally:
+            connection.close()
+
+    def filter_tracks_by_date(self, file_type="streamingHistory", year=2024, month=1):
         """
-        Filters and displays tracks from streaming history starting from the most recent
-        till a user-specified month and year.
-
-        Prompts the user for the target month and year.
+        Filter tracks from the database based on a specified year and month.
+        Supports both StreamingHistory and ExtendedHistory data.
         """
-        if not self.streaming_history_data:
-            print("No streaming history data available.")
-            return
-
-        # Ensure data is sorted by 'endTime' (most recent first)
-        self.streaming_history_data.sort(
-            key=lambda x: datetime.strptime(x['endTime'], '%Y-%m-%d %H:%M'), reverse=True
-        )
+        connection = pymysql.connect(**self.db_config)
+        user_id = self.sp.current_user()['id']
 
         try:
-            # Prompt the user for a month and year
-            year = int(input("Enter the year (e.g., 2023): "))
-            month = int(input("Enter the month (1-12): "))
-            cutoff_date = datetime(year, month, 1)
-        except ValueError:
-            print("Invalid input. Please enter a valid year and month.")
-            return
+            with connection.cursor() as cursor:
+                if file_type == "streamingHistory":
+                    cursor.execute(
+                        "SELECT streaming_history_json FROM raw_data WHERE raw_data_id = (SELECT raw_data_id FROM user_info WHERE current_user_id = %s)",
+                        (user_id,)
+                    )
+                elif file_type == "extendedHistory":
+                    cursor.execute(
+                        "SELECT extended_history_json FROM raw_data WHERE raw_data_id = (SELECT raw_data_id FROM user_info WHERE current_user_id = %s)",
+                        (user_id,)
+                    )
+                result = cursor.fetchone()
 
-        print(f"\nShowing tracks from the most recent until {cutoff_date.strftime('%B %Y')}:\n")
+                if result:
+                    json_data = json.loads(result[0])
+                    cutoff_date = datetime(year, month, 1)
 
-        # Filter and display tracks
-        for track in self.streaming_history_data:
-            track_date = datetime.strptime(track['endTime'], '%Y-%m-%d %H:%M')
+                    filtered_tracks = [
+                        track for track in json_data
+                        if datetime.strptime(track.get("endTime" if file_type == "streamingHistory" else "ts"),
+                                             "%Y-%m-%d %H:%M" if file_type == "streamingHistory" else "%Y-%m-%dT%H:%M:%SZ") >= cutoff_date
+                    ]
+                    return filtered_tracks
+                else:
+                    print(f"No data available for {file_type}.")
+                    return []
 
-            # Stop if the track's date is earlier than the cutoff date
-            if track_date < cutoff_date:
-                break
+        except Exception as e:
+            print(f"Error filtering tracks: {e}")
+            return []
 
-            print(f"{track['trackName']} by {track['artistName']} (Played at: {track['endTime']})")
-
-    # def save_recent_tracks_timeline(self, output_path="recent_tracks_timeline.png"):
-    #     """
-    #     Creates and saves a visually appealing timeline plot for recent track history using Plotly,
-    #     with adjusted text positions to prevent overlap.
-
-    #     :param output_path: Path where the timeline image will be saved.
-    #     """
-    #     if not self.recent_tracks_data or 'items' not in self.recent_tracks_data:
-    #         print("No recent tracks data available.")
-    #         return
-
-    #     # Prepare data for the timeline
-    #     timeline_data = []
-    #     for idx, item in enumerate(self.recent_tracks_data['items']):
-    #         track = item['track']
-    #         played_at = datetime.strptime(item['played_at'], '%Y-%m-%dT%H:%M:%S.%fZ')
-    #         track_name = track['name']
-    #         artist_name = track['artists'][0]['name']
-
-    #         # Alternate y-offsets for text placement
-    #         offset = 1 if idx % 2 == 0 else -1
-
-    #         timeline_data.append({
-    #             "Played At": played_at,
-    #             "Track Name": track_name,
-    #             "Artist": artist_name,
-    #             "Offset": offset
-    #         })
-
-    #     # Convert to DataFrame
-    #     df = pd.DataFrame(timeline_data)
-
-    #     # Create the Plotly timeline
-    #     fig = go.Figure()
-
-    #     # Add scatter trace for track points
-    #     fig.add_trace(
-    #         go.Scatter(
-    #             x=df["Played At"],
-    #             y=[1] * len(df),  # Fixed y-axis for timeline
-    #             mode="markers",
-    #             marker=dict(size=10, color="blue"),
-    #             hovertemplate="<b>Track:</b> %{customdata[0]}<br><b>Played At:</b> %{x}<extra></extra>",
-    #             name="Track Played",
-    #             customdata=df[["Track Name", "Artist"]],  # Pass extra info for hover
-    #         )
-    #     )
-
-    #     # Add a separate trace for text labels with offsets
-    #     fig.add_trace(
-    #         go.Scatter(
-    #             x=df["Played At"],
-    #             y=df["Offset"],  # Use offsets for alternate text placement
-    #             mode="text",
-    #             text=df["Track Name"],
-    #             textposition="top center",
-    #             hoverinfo="skip",  # Hide hover for text labels
-    #             showlegend=False,  # No legend for text
-    #         )
-    #     )
-
-    #     # Update layout for better readability
-    #     fig.update_layout(
-    #         title="Recent Track History Timeline",
-    #         xaxis=dict(title="Date and Time Played", showgrid=True),
-    #         yaxis=dict(title="", showticklabels=False),
-    #         plot_bgcolor="white",
-    #         height=500,
-    #         margin=dict(l=50, r=50, t=50, b=50),
-    #     )
-
-    #     # Save the plot as an image
-    #     fig.write_image(output_path)
-    #     print(f"Timeline saved as {output_path}")
-
-    
-
-
+        finally:
+            connection.close()
