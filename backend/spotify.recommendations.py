@@ -49,7 +49,7 @@ class SpotifyClient:
             num_tracks = playlist['tracks']['total']
             print(f"{idx}. {playlist_name} (ID: {playlist_id}, Total Tracks: {num_tracks})")
 
-    def explore_my_playlist(self, playlist_id='2pg3LPneBfKIpyAUH0jdjp'):
+    def explore_my_playlist(self, playlist_id='6leMB93QeEgApPxzQqF81o'):
         playlist = self.sp.playlist(playlist_id)
         print(f"\n=== Exploring Playlist: {playlist['name']} ===")
         
