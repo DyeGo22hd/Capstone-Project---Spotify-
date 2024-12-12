@@ -40,11 +40,12 @@ const Navbar = () => {
         navigate('/recommendation-search');
     };
 
+    //<li><a id='dynamic' onClick={navigateToDynamic}>DYNAMIC</a></li>
     return (
         <ul id='navbar'>
             <li><a className="active" id='home' onClick={navigateToHome}>HOME</a></li>
             <li><a id='account' onClick={navigateToAccount}>ACCOUNT</a></li>
-            <li><a id='dynamic' onClick={navigateToDynamic}>DYNAMIC</a></li>
+            
             <li><a id="recommendation-search" onClick={navigateToRecommendation}>RECOMMENDATION</a></li>
         </ul>
     )
