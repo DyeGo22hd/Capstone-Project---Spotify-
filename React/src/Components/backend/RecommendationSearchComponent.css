@@ -1,10 +1,9 @@
 .recommendation-search-component {
-    max-width: 600px;
+    max-width: 600px; /* Restrict component width */
     margin: 0 auto;
     text-align: left;
 }
 
-/* Style the search box and button */
 .search-box {
     display: flex;
     justify-content: space-between;
@@ -39,22 +38,37 @@
     margin-bottom: 10px;
 }
 
-/* Remove unnecessary container box */
+/* Recommendations list */
 .recommendations-list {
-    list-style: none;
+    list-style: none; /* Remove default bullet points */
     padding: 0;
     margin: 0;
 }
 
 .recommendation-item {
     margin-bottom: 15px;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid #ddd; /* Separator for items */
     padding-bottom: 10px;
+    display: block; /* Ensure items are displayed vertically */
 }
+
+    .recommendation-item strong {
+        font-size: 16px;
+        display: block;
+    }
+
+    .recommendation-item em {
+        font-size: 14px;
+        color: gray;
+        display: block;
+        margin-top: 5px;
+    }
 
     .recommendation-item a {
         color: rebeccapurple;
         text-decoration: none;
+        margin-top: 5px;
+        display: inline-block;
     }
 
         .recommendation-item a:hover {

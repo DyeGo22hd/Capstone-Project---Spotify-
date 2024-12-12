@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
+import './RecommendationSearchComponent.css';
 
 const RecommendationSearchComponent = ({ backendUrl, mode, placeholder }) => {
     const [searchQuery, setSearchQuery] = useState("");
