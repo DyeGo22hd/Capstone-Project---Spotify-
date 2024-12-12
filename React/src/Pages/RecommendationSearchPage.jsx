@@ -1,43 +1,52 @@
-.recommendation-search-page {
-    max-width: 900px; /* Constrain width */
-    margin: 0 auto;
-    padding: 20px;
-    text-align: left;
-    padding-top: 80px; /* Adjust for navbar */
-}
+import React, { useState } from "react";
+import RecommendationSearchComponent from "../Components/backend/RecommendationSearchComponent"; // Adjust path
+import "./RecommendationSearchPage.css"; // Ensure styles are properly scoped
 
-.mode-buttons {
-    display: flex;
-    justify-content: space-evenly;
-    margin-bottom: 20px;
-}
+const RecommendationSearchPage = () => {
+    const backendUrl = "http://localhost:8000"; // Replace with your backend URL
+    const [mode, setMode] = useState("song");
 
-.mode-buttons button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    background-color: rebeccapurple;
-    color: white;
-}
+    const handleModeChange = (newMode) => {
+        setMode(newMode);
+    };
 
-.mode-buttons button.active {
-    background-color: purple;
-    font-weight: bold;
-}
+    const modeDetails = {
+        song: { placeholder: "Enter a song name...", mode: "song" },
+        artist: { placeholder: "Enter an artist name...", mode: "artist" },
+        genre: { placeholder: "Enter a genre...", mode: "genre" },
+    };
 
-.mode-buttons button:hover {
-    background-color: darkorchid;
-}
+    return (
+        <div className="recommendation-search-page">
+            <div className="mode-buttons">
+                <button
+                    className={mode === "song" ? "active" : ""}
+                    onClick={() => handleModeChange("song")}
+                >
+                    Song
+                </button>
+                <button
+                    className={mode === "artist" ? "active" : ""}
+                    onClick={() => handleModeChange("artist")}
+                >
+                    Artist
+                </button>
+                <button
+                    className={mode === "genre" ? "active" : ""}
+                    onClick={() => handleModeChange("genre")}
+                >
+                    Genre
+                </button>
+            </div>
+            <div className="recommendation-content">
+                <RecommendationSearchComponent
+                    backendUrl={backendUrl}
+                    mode={modeDetails[mode].mode}
+                    placeholder={modeDetails[mode].placeholder}
+                />
+            </div>
+        </div>
+    );
+};
 
-.recommendation-content {
-    margin-top: 20px;
-}
-
-.recommendations {
-    margin-top: 20px; /* Space above recommendations */
-    border: 1px solid #ddd;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-}
+export default RecommendationSearchPage;

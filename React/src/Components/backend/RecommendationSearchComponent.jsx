@@ -42,26 +42,24 @@ const RecommendationSearchComponent = ({ backendUrl, mode, placeholder }) => {
                 <button onClick={handleSearch}>Search</button>
             </div>
             {error && <p className="error-message">{error}</p>}
-            <div className="recommendations-container">
-                {recommendations.length > 0 && (
-                    <div className="recommendations">
-                        <h3>Recommendations:</h3>
-                        <ul>
-                            {recommendations.map((rec, index) => (
-                                <li key={index}>
-                                    <strong>{rec.trackName}</strong> by {rec.artistName}
-                                    <br />
-                                    <em>{rec.albumName}</em>
-                                    <br />
-                                    <a href={rec.spotifyUrl} target="_blank" rel="noopener noreferrer">
-                                        Listen on Spotify
-                                    </a>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                )}
-            </div>
+            {recommendations.length > 0 && (
+                <div className="recommendations">
+                    <h3>Recommendations:</h3>
+                    <ul>
+                        {recommendations.map((rec, index) => (
+                            <li key={index}>
+                                <strong>{rec.trackName}</strong> by {rec.artistName}
+                                <br />
+                                <em>{rec.albumName}</em>
+                                <br />
+                                <a href={rec.spotifyUrl} target="_blank" rel="noopener noreferrer">
+                                    Listen on Spotify
+                                </a>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
         </div>
     );
 };
