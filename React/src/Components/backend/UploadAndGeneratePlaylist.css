@@ -1,0 +1,31 @@
+.control-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.left-section {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.right-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    flex-grow: 1;
+}
+
+/* New flex container for aligning inputs and button */
+.left-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px; /* Add space between elements */
+    align-items: center; /* Aligns items horizontally */
+}
+
+    .left-section label {
+        flex-basis: calc(50% - 20px); /* Adjusts width of the inputs */
+        margin-bottom: 10px; /* Space between field
