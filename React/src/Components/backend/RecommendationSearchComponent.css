@@ -1,10 +1,10 @@
 .recommendation-search-component {
-    max-width: 600px; /* Restrict width */
+    max-width: 600px;
     margin: 0 auto;
-    padding: 20px;
     text-align: left;
 }
 
+/* Style the search box and button */
 .search-box {
     display: flex;
     justify-content: space-between;
@@ -32,28 +32,31 @@
             background-color: purple;
         }
 
+/* Error message styling */
 .error-message {
     color: red;
     font-weight: bold;
     margin-bottom: 10px;
 }
 
-.recommendations {
-    margin-top: 20px; /* Space between search box and results */
-    border: 1px solid #ddd;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    background: white;
+/* Remove unnecessary container box */
+.recommendations-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
-    .recommendations ul {
-        list-style: none;
-        padding: 0;
+.recommendation-item {
+    margin-bottom: 15px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+}
+
+    .recommendation-item a {
+        color: rebeccapurple;
+        text-decoration: none;
     }
 
-    .recommendations li {
-        margin-bottom: 15px;
-        border-bottom: 1px solid #ddd;
-        padding-bottom: 10px;
-    }
+        .recommendation-item a:hover {
+            text-decoration: underline;
+        }

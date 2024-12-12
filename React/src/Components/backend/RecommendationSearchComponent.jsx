@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
-import './RecommendationSearchComponent.css';
 
 const RecommendationSearchComponent = ({ backendUrl, mode, placeholder }) => {
     const [searchQuery, setSearchQuery] = useState("");
@@ -16,7 +15,8 @@ const RecommendationSearchComponent = ({ backendUrl, mode, placeholder }) => {
         setError(""); // Clear any previous error
 
         try {
-            const response = await fetch(`${backendUrl}/api/recommendations/by-${mode}?${mode}_name=${encodeURIComponent(searchQuery)}`);
+            const queryParam = mode === "song" ? "song_name" : mode === "artist" ? "artist_name" : "genre";
+            const response = await fetch(`${backendUrl}/api/recommendations/by-${mode}?${queryParam}=${encodeURIComponent(searchQuery)}`);
 
             if (!response.ok) {
                 throw new Error(`Failed to fetch recommendations: ${response.statusText}`);
@@ -43,22 +43,19 @@ const RecommendationSearchComponent = ({ backendUrl, mode, placeholder }) => {
             </div>
             {error && <p className="error-message">{error}</p>}
             {recommendations.length > 0 && (
-                <div className="recommendations">
-                    <h3>Recommendations:</h3>
-                    <ul>
-                        {recommendations.map((rec, index) => (
-                            <li key={index}>
-                                <strong>{rec.trackName}</strong> by {rec.artistName}
-                                <br />
-                                <em>{rec.albumName}</em>
-                                <br />
-                                <a href={rec.spotifyUrl} target="_blank" rel="noopener noreferrer">
-                                    Listen on Spotify
-                                </a>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
+                <ul className="recommendations-list">
+                    {recommendations.map((rec, index) => (
+                        <li key={index} className="recommendation-item">
+                            <strong>{rec.trackName}</strong> by {rec.artistName}
+                            <br />
+                            <em>{rec.albumName}</em>
+                            <br />
+                            <a href={rec.spotifyUrl} target="_blank" rel="noopener noreferrer">
+                                Listen on Spotify
+                            </a>
+                        </li>
+                    ))}
+                </ul>
             )}
         </div>
     );
@@ -66,8 +63,8 @@ const RecommendationSearchComponent = ({ backendUrl, mode, placeholder }) => {
 
 RecommendationSearchComponent.propTypes = {
     backendUrl: PropTypes.string.isRequired,
-    mode: PropTypes.string.isRequired, // E.g., 'song', 'artist', or 'genre'
-    placeholder: PropTypes.string, // Placeholder for the search input
+    mode: PropTypes.string.isRequired, // 'song', 'artist', or 'genre'
+    placeholder: PropTypes.string, // Placeholder text
 };
 
 RecommendationSearchComponent.defaultProps = {

@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import RecommendationSearchComponent from "../Components/backend/RecommendationSearchComponent"; // Adjust path
-import "./RecommendationSearchPage.css"; // Ensure styles are properly scoped
+import RecommendationSearchComponent from "../Components/backend/RecommendationSearchComponent";
+import "./RecommendationSearchPage.css";
 
 const RecommendationSearchPage = () => {
-    const backendUrl = "http://localhost:8000"; // Replace with your backend URL
+    const backendUrl = "http://localhost:8000"; // Backend URL
     const [mode, setMode] = useState("song");
 
     const handleModeChange = (newMode) => {
@@ -38,13 +38,11 @@ const RecommendationSearchPage = () => {
                     Genre
                 </button>
             </div>
-            <div className="recommendation-content">
-                <RecommendationSearchComponent
-                    backendUrl={backendUrl}
-                    mode={modeDetails[mode].mode}
-                    placeholder={modeDetails[mode].placeholder}
-                />
-            </div>
+            <RecommendationSearchComponent
+                backendUrl={backendUrl}
+                mode={modeDetails[mode].mode}
+                placeholder={modeDetails[mode].placeholder}
+            />
         </div>
     );
 };
