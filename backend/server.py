@@ -6,9 +6,24 @@ import os
 
 app = FastAPI()
 
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # Adjust for your frontend origin
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Instantiate Spotify client and data analysis objects
 spotify_client = SpotifyClient()
 data_analysis = DataAnalysis(spotify_client)
+
+@app.get("/")
+def root():
+    return {"message": "API is working"}
+
 
 @app.post("/upload/")
 async def upload_json(file: UploadFile, file_type: str = Form(...)):

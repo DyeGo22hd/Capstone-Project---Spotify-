@@ -22,10 +22,20 @@ const Navbar = () => {
         navigate('/account');
     };
 
+    const navigateToDynamic = () => {
+        Array.from(document.querySelector('ul#navbar').getElementsByTagName('a')).forEach(function (e) {
+            e.classList.remove("active")
+        });
+        document.getElementById('dynamic').className = "active";
+
+        navigate('/dynamic');
+    };
+
     return (
         <ul id='navbar'>
             <li><a className="active" id='home' onClick={navigateToHome}>HOME</a></li>
             <li><a id='account' onClick={navigateToAccount}>ACCOUNT</a></li>
+            <li><a id='dynamic' onClick={navigateToDynamic}>DYNAMIC</a></li>
         </ul>
     )
 };

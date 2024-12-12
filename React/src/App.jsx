@@ -7,6 +7,7 @@ import UserInfo from './Components/appwrite-oauth/appwrite-session-info.jsx';
 
 import Homepage from './Pages/homepage.jsx';
 import Account from './Pages/account.jsx';
+import Dynamic from "./pages/Dynamic";
 import Navbar from './Components/page-elements/navbar.jsx';
 
 import { SessionProvider } from './logic-necessary/session-provider.jsx';
@@ -48,6 +49,8 @@ function App() {
                             <Account />
 
                         } />
+
+                        <Route path="/dynamic" element={<Dynamic />} />
 
                         <Route path="/failed" element={<div>Login Failed</div>} />
 
