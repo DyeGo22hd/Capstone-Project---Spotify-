@@ -1,12 +1,11 @@
 from fastapi import FastAPI, UploadFile, Form
+from fastapi.middleware.cors import CORSMiddleware
 from spotify_client import SpotifyClient
 from data_analysis import DataAnalysis
 import json
 import os
 
 app = FastAPI()
-
-from fastapi.middleware.cors import CORSMiddleware
 
 app.add_middleware(
     CORSMiddleware,
